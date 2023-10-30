@@ -1,0 +1,7 @@
+.bg-darkgrey{
+    background-color: var(--color-darkgrey)
+}
+
+.footer {
+    background-color:var(--bs-gray-200)
+}

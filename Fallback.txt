@@ -1,0 +1,262 @@
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Фамилия</th>
+                <th>Имя</th>
+                <th>Отчество</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (_loading)
+            {
+                    <tr>
+                        <td colspan="5" class="text-center">
+                            Загрузка категорий...
+                        </td>
+                    </tr>
+            }
+            else if (!_loading && (originalPeople is null || !originalPeople.Any()))
+            {
+                    <tr>
+                        <td colspan="5" class="text-center">
+                            Записи не найдены!
+                        </td>
+                    </tr>
+            }
+            else
+            {
+                foreach (var person in originalPeople!)
+                {
+                            <tr>
+                                <td>@person.Id</td>
+                                <td>@person.FirstName</td>
+                                <td>@person.SecondName</td>
+                                <td>@person.PatherName</td>
+@*                                <td>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" @onclick="() => EditCategoryAsync(category)">Редактировать</button>
+                                </td>*@
+                            </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+
+    -----------------
+
+    <div class="grid" tabindex="-1" style="display: @(_loading ? "none" : "block" )">
+        <QuickGrid Items="@_people" @ref="peopleGrid" Pagination="pagination">
+            <PropertyColumn Property="@(p => p.Id)" Sortable="true"
+                IsDefaultSort="SortDirection.Ascending">ID</PropertyColumn>
+            <PropertyColumn Property="@(p => p.SecondName)" Sortable="true" title="Фамилия"></PropertyColumn>
+            <PropertyColumn Property="@(p => p.FirstName)" Sortable="true" title="Имя"></PropertyColumn>
+            <PropertyColumn Property="@(p => p.PatherName)" Sortable="true" title="Отчество"></PropertyColumn>
+            <PropertyColumn Property="@(p => p.GroupId)" Sortable="false">Группа</PropertyColumn>
+            <PropertyColumn Property="@(p => p.Type)" Sortable="false">Преподаватель(P)/Студент(S)</PropertyColumn>
+            <TemplateColumn title="Изменить">
+                <button class="btn btn-outline-primary btn-sm" @onclick="() => EditPersonAsync(context)">Изменить</button>
+            </TemplateColumn>
+        </QuickGrid>
+    </div>
+    --------------------------------
+    @page "/people"
+@inject IPersonService PersonService
+@inject IGroupService GroupService
+ <style>
+    .rz-grid-table {
+        width: unset;
+    }
+</style>
+
+<RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle_outline" 
+class="mt-0 mb-3" Text="Добавить новую запись" 
+Click="@InsertRow" Disabled=@(personToInsert != null || personToUpdate != null) />
+<br />
+<RadzenDataGrid @ref="peopleGrid" AllowAlternatingRows="false" AllowFiltering="true" 
+    AllowPaging="true" PageSize="6" AllowSorting="true" EditMode="DataGridEditMode.Single"
+    Data="@_people" TItem="Person" RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow" 
+    Sort="@Reset" Page="@Reset" Filter="@Reset" ColumnWidth="200px">
+    <Columns>
+        <RadzenDataGridColumn TItem="Person" Property="Id" Title="ID" Width="120px" Frozen="true" />
+        <RadzenDataGridColumn TItem="Person" Property="SecondName" Title="Фамилия">
+            <EditTemplate Context="person">
+                <RadzenTextBox @bind-Value="person.SecondName" Style="width:200px; display: block" Name="Фамилия"/>
+                <RadzenRequiredValidator Text="Введите фамилию" Component="SecondName" Popup="true"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="Person" Property="FirstName" Title="Имя">
+            <EditTemplate Context="person">
+                <RadzenTextBox @bind-Value="person.FirstName" Style="width:200px; display: block" Name="Имя"/>
+                <RadzenRequiredValidator Text="Введите имя" Component="FirstName" Popup="true"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="Person" Property="PatherName" Title="Отчество">
+            <EditTemplate Context="person">
+                <RadzenTextBox @bind-Value="person.PatherName" Style="width:200px; display: block" Name="Отчество"/>
+                <RadzenRequiredValidator Text="Введите отчество" Component="PatherName" Popup="true"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="Person" Property="Type" Title="Преподаватель(P)/Студент(S)">
+            <EditTemplate Context="person">
+                <RadzenDropDown @bind-Value="person.Type" Data="@types" Style="width:100px;display:block" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="Person" Property="Group.Name" Title="Группа" Width="200px">
+            <EditTemplate Context="person">
+                <RadzenDropDown @bind-Value="person.GroupId" Data="@_groups" TextProperty="Name" ValueProperty="Id" Style="width:150px;display:block" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="Person" Context="person" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+            <Template Context="person">
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => EditRow(person))" @onclick:stopPropagation="true">
+                </RadzenButton>
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@(args => DeleteRow(person))"  @onclick:stopPropagation="true">
+                </RadzenButton>
+            </Template>
+            <EditTemplate Context="person">
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(person))">
+                </RadzenButton>
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@((args) => CancelEdit(person))">
+                </RadzenButton>
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@(args => DeleteRow(person))">
+                </RadzenButton>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+
+</RadzenDataGrid>
+
+@code{
+    RadzenDataGrid<Person> peopleGrid;
+    IEnumerable<Person> _people;
+    IEnumerable<Data.Entities.Group> _groups;
+    char[] types = new char[] { 'P', 'S' };
+
+    Person? personToUpdate;
+    Person? personToInsert;
+
+    private void Reset()
+    {
+        personToInsert = null;
+        personToUpdate = null;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        _groups = GroupService.GetGroups();
+        _people = PersonService.GetPeople();
+    }
+
+    private async Task InsertRow()
+    {
+        personToInsert = new Person();
+        await peopleGrid.InsertRow(personToInsert);
+    }
+
+    private async Task SaveRow(Person person)
+    {
+        await peopleGrid.UpdateRow(person);
+    }
+
+    private async Task EditRow(Person person)
+    {
+        personToUpdate = person;
+        await peopleGrid.EditRow(person);
+    }
+
+    private async Task OnUpdateRow(Person person)
+    {
+        Reset();
+        await PersonService.SavePersonAsync(person);
+    }
+
+    private async Task DeleteRow(Person person)
+    {
+        Reset();
+
+        if (_people.Contains(person))
+        {
+            //...
+            await peopleGrid.Reload();
+        }
+        else
+        {
+            peopleGrid.CancelEditRow(person);
+            await peopleGrid.Reload();
+        }
+    }
+
+    private async Task OnCreateRow(Person person)
+    {
+        await PersonService.SavePersonAsync(person);
+        personToInsert = null;
+    }
+
+    private void CancelEdit(Person person)
+    {
+        Reset();
+
+        peopleGrid.CancelEditRow(person);
+
+        PersonService.CheckEntries(person);
+    }
+    --------------
+    @if (_people == null)
+{
+    <p><em>Загрузка...</em></p>
+}
+else
+{
+    @if (selectedItem != null)
+    {
+        <Label><p>@(selectedItem.SecondName + ' ' + selectedItem.FirstName + ' ' + selectedItem.PatherName)</p></Label>
+    }
+}
+
+@code{
+    private IEnumerable<Person> _people;
+    private Person selectedItem;
+
+    protected override async Task OnInitializedAsync()
+    {
+        //await base.OnInitializedAsync();
+        _people = await PersonService.GetPeopleAsync();
+        _people = _people.OrderBy(p => p.Type).ThenBy(p => p.SecondName);
+    }
+
+    async Task OnRowInsertedOrUpdated(SavedRowItem<Person, Dictionary<string, object>> e)
+    {
+        var person = e.Item;
+        var result = await PersonService.SavePersonAsync(person);
+        if(result.Status)
+        {
+            _people = await PersonService.GetPeopleAsync();
+            StateHasChanged();
+        }
+    }
+
+    async Task OnRowRemoved(Person person)
+    {
+        var result = await PersonService.DeletePersonAsync(person.Id);
+        if (result.Status)
+        {
+            _people = await PersonService.GetPeopleAsync();
+            StateHasChanged();
+        }
+    }
+
+    void OnNewItemDefaultSetter(Person person)
+    {
+        person.Type = 'S';
+        StateHasChanged();
+    }
+}
+}

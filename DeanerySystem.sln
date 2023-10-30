@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeanerySystem", "DeanerySystem\DeanerySystem.csproj", "{440ABC0C-2AF7-4011-A11F-20474ED2738B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решения", "Элементы решения", "{E227F2ED-C285-4821-B7A6-9DAB467E0685}"
+	ProjectSection(SolutionItems) = preProject
+		Fallback.txt = Fallback.txt
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{440ABC0C-2AF7-4011-A11F-20474ED2738B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{440ABC0C-2AF7-4011-A11F-20474ED2738B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{440ABC0C-2AF7-4011-A11F-20474ED2738B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{440ABC0C-2AF7-4011-A11F-20474ED2738B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {978FA890-1C6F-4125-9ABA-B11BDD7F2893}
+	EndGlobalSection
+EndGlobal
