@@ -12,4 +12,6 @@ public partial class Group
     public int? Year { get; set; }
 
     public virtual ICollection<Person> People { get; set; } = new List<Person>();
+
+    public Group Clone() => (Group)this.MemberwiseClone();
 }

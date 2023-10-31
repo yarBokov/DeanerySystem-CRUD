@@ -1,6 +1,8 @@
 ﻿using DeanerySystem.Data;
 using DeanerySystem.Data.Entities;
+using DeanerySystem.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace DeanerySystem.Services
 {
@@ -13,15 +15,32 @@ namespace DeanerySystem.Services
             _context = context;
         }
 
-        public async Task<string> GetGroupNameById(int? groupId)
+        public async Task<MethodResult> SaveGroupAsync(Group group)
         {
-            var result =  await _context.Groups.FindAsync(groupId);
-            return result.Name;
+            try
+            {
+                if (group.Id > 0)
+                {
+                    _context.Update(group);
+                }
+                else
+                {
+                    await _context.AddAsync(group);
+                }
+                await _context.SaveChangesAsync();
+                await _context.DisposeAsync();
+                return MethodResult.Success();
+            }
+            catch (Exception ex)
+            {
+                return MethodResult.Failure(ex.Message);
+            }
         }
 
         public async Task<IEnumerable<Group>> GetGroupsAsync()
         {
-            return await _context.Groups.AsNoTracking().ToListAsync();
+            var result =  await _context.Groups.AsNoTracking().ToListAsync();
+            return result.OrderByDescending(result=> result.Name);
         }
 
         public IEnumerable<Group> GetStudentGroups()
@@ -32,6 +51,11 @@ namespace DeanerySystem.Services
         public IEnumerable<Group> GetTeacherGroups()
         {
             return _context.Groups.Where(g => g.Name.Contains("TEACH"));
+        }
+
+        public async Task<Group> GetGroupByIdAsync(int? groupId)
+        {
+            return await _context.Groups.FindAsync(groupId);
         }
     }
 }

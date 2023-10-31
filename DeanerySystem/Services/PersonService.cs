@@ -1,5 +1,4 @@
-﻿using Blazorise;
-using DeanerySystem.Data;
+﻿using DeanerySystem.Data;
 using DeanerySystem.Data.Entities;
 using DeanerySystem.Models;
 using Microsoft.EntityFrameworkCore;
@@ -43,12 +42,11 @@ namespace DeanerySystem.Services
             return await people.ToListAsync();
         }
 
-        public async Task<MethodResult> DeletePersonAsync(int personId)
+        public async Task<MethodResult> DeletePersonAsync(Person person)
         {
             try
             {
-                var personToDelete = await _context.People.FindAsync(personId);
-                _context.People.Remove(personToDelete);
+                _context.People.Remove(person);
                 await _context.SaveChangesAsync();
                 return MethodResult.Success();
             }
@@ -68,6 +66,24 @@ namespace DeanerySystem.Services
             }
         }
 
+        public async Task<IEnumerable<Person>> GetStudentsAsync()
+        {
+            var studentGroupsIds = await GetIdsByGroups(false);
+            return await _context.People.Where(p => 
+                studentGroupsIds.Contains(p.GroupId.GetValueOrDefault())).ToListAsync();
+        }
 
+        public async Task<IEnumerable<Person>> GetTeachersAsync()
+        {
+            var teacherGroupsIds = await GetIdsByGroups(true);
+            return await _context.People.Where(p => 
+                teacherGroupsIds.Contains(p.GroupId.GetValueOrDefault())).ToListAsync();
+        }
+
+        private async Task<IEnumerable<int>> GetIdsByGroups(bool seekInTeachers)
+        {
+            return await _context.Groups.Where(g => g.Name.Contains("TEACH") == seekInTeachers)
+                                                        .Select(g => g.Id).ToListAsync();
+        }
     }
 }

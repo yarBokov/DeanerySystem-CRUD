@@ -136,7 +136,7 @@ else
 
         if (_people.Contains(person))
         {
-            //...
+            await PersonService.DeletePersonAsync(person);
             await peopleGrid.Reload();
         }
         else
