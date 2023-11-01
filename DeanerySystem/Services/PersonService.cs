@@ -42,13 +42,18 @@ namespace DeanerySystem.Services
             return await people.ToListAsync();
         }
 
-        public async Task<MethodResult> DeletePersonAsync(Person person)
+        public async Task<MethodResult> DeletePersonAsync(int personId)
         {
             try
             {
-                _context.People.Remove(person);
-                await _context.SaveChangesAsync();
-                return MethodResult.Success();
+                var result = await _context.Groups.FirstOrDefaultAsync(g => g.Id == personId);
+                if (result != null)
+                {
+                    _context.Groups.Remove(result);
+                    await _context.SaveChangesAsync();
+                    return MethodResult.Success();
+                }
+                return MethodResult.Failure($"Не найден человек с Id: {personId}");
             }
             catch(Exception ex)
             {
@@ -64,26 +69,6 @@ namespace DeanerySystem.Services
                 personEntry.CurrentValues.SetValues(personEntry.OriginalValues);
                 personEntry.State = EntityState.Unchanged;
             }
-        }
-
-        public async Task<IEnumerable<Person>> GetStudentsAsync()
-        {
-            var studentGroupsIds = await GetIdsByGroups(false);
-            return await _context.People.Where(p => 
-                studentGroupsIds.Contains(p.GroupId.GetValueOrDefault())).ToListAsync();
-        }
-
-        public async Task<IEnumerable<Person>> GetTeachersAsync()
-        {
-            var teacherGroupsIds = await GetIdsByGroups(true);
-            return await _context.People.Where(p => 
-                teacherGroupsIds.Contains(p.GroupId.GetValueOrDefault())).ToListAsync();
-        }
-
-        private async Task<IEnumerable<int>> GetIdsByGroups(bool seekInTeachers)
-        {
-            return await _context.Groups.Where(g => g.Name.Contains("TEACH") == seekInTeachers)
-                                                        .Select(g => g.Id).ToListAsync();
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿@page "/teachers"
+
+@inject IJSRuntime JsRuntime
 @inject IPersonService PersonService
 @inject IGroupService GroupService
 @inject DialogService DialogService
@@ -136,7 +138,12 @@ else
 
         if (_people.Contains(person))
         {
-            await PersonService.DeletePersonAsync(person);
+            var deleteCheck = await PersonService.DeletePersonAsync(person.Id);
+            if (!deleteCheck.Status)
+            {
+                await JsRuntime.InvokeVoidAsync("console.log", deleteCheck.Error);
+                return;
+            }
             await peopleGrid.Reload();
         }
         else

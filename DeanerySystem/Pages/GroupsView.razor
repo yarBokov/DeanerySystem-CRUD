@@ -49,10 +49,12 @@
                         <td>@group.Name</td>
                         <td>@group.Year</td>
                         <td>
-                            <button type="button" class="btn btn-outline-primary btn-sm" @onclick="() => EditGroupAsync(group)" disabled="@(group.Name.Equals("TEACHERS IN "))">Редактировать</button>
+                                <button id="changeContentButton" type="button" class="btn btn-outline-primary btn-sm" @onclick="() => EditGroupAsync(group)" 
+                                disabled="@(() => GroupService.CheckIfNonEditable(group))">Редактировать</button>
                         </td>
                         <td>
-                            <button type="button" class="btn btn-danger btn-sm" @onclick="() => DeleteGroupAsync(group)" disabled="@(group.Name.Equals("TEACHERS IN "))">Удалить группу</button>
+                                <button id="changeContentButton" type="button" class="btn btn-danger btn-sm" @onclick="() => DeleteGroupAsync(group)" 
+                                disabled="@(() => GroupService.CheckIfNonEditable(group))">Удалить группу</button>
                         </td>
                     </tr>
                 }
@@ -110,7 +112,7 @@
 
     private async Task EditGroupAsync(Data.Entities.Group group)
     {
-        _groupModel = group.Clone();
+        _groupModel = await GroupService.GetGroupById(group.Id);
         await OpenGroupFormAsync();
     }
 
@@ -132,6 +134,11 @@
     {
         var result = await DialogService.Confirm("Вы собираетесь удалить запись? Данные нельзя будет восстановить", "Удаление записи", new ConfirmOptions() { OkButtonText = "Да", CancelButtonText = "Нет" });
         if (result is not true) return;
+        var deleteCheck = await GroupService.DeleteGroupAsync(group.Id);
+        if (!deleteCheck.Status)
+        {
+            await JsRuntime.InvokeVoidAsync("console.log", deleteCheck.Error);
+        }
     }
 
     private async Task AlertAsync(string message)

@@ -28,7 +28,6 @@ namespace DeanerySystem.Services
                     await _context.AddAsync(group);
                 }
                 await _context.SaveChangesAsync();
-                await _context.DisposeAsync();
                 return MethodResult.Success();
             }
             catch (Exception ex)
@@ -39,23 +38,39 @@ namespace DeanerySystem.Services
 
         public async Task<IEnumerable<Group>> GetGroupsAsync()
         {
-            var result =  await _context.Groups.AsNoTracking().ToListAsync();
+            var result =  await _context.Groups.ToListAsync();
             return result.OrderByDescending(result=> result.Name);
         }
 
-        public IEnumerable<Group> GetStudentGroups()
+        public async Task<Group> GetGroupById(int groupId)
         {
-            return _context.Groups.Where(g => g.Name.Contains("TEACH") == false);
+            return await _context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
         }
 
-        public IEnumerable<Group> GetTeacherGroups()
+        public async Task<MethodResult> DeleteGroupAsync(int groupId)
         {
-            return _context.Groups.Where(g => g.Name.Contains("TEACH"));
+            try
+            {
+                var result = await _context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
+                if (result != null)
+                {
+                    _context.Groups.Remove(result);
+                    await _context.SaveChangesAsync();
+                    return MethodResult.Success();
+                }
+                return MethodResult.Failure($"Не найдена группа с Id: {groupId}");
+            }
+            catch (Exception ex)
+            {
+                return MethodResult.Failure(ex.Message);
+            }
         }
 
-        public async Task<Group> GetGroupByIdAsync(int? groupId)
+        public async Task<bool> CheckIfNonEditable(Group group)
         {
-            return await _context.Groups.FindAsync(groupId);
+            var peopleWithGroups = await _context.People.Include(p => p.Group).ToListAsync();
+            return group.Name!.Equals("TEACHERS IN TECH") || group.Name!.Equals("TEACHERS IN HUMAN") || 
+                   peopleWithGroups.FirstOrDefault(p => p.GroupId == group.Id)!.Group!.People.Any();
         }
     }
 }

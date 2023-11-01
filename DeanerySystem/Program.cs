@@ -10,9 +10,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddTransient<IPersonService, PersonService>()
-                .AddTransient<IGroupService, GroupService>()
-                .AddTransient<ISubjectService, SubjectService>();
+builder.Services.AddScoped<IPersonService, PersonService>()
+                .AddScoped<IGroupService, GroupService>()
+                .AddScoped<ISubjectService, SubjectService>();
 
 builder.Services.AddDbContext<DeaneryContext>(
     options => options.UseNpgsql(@"Host=localhost;Port=5432;Database=Deanery;Username=postgres;Password=Uo987kt"), 

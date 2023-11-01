@@ -6,10 +6,9 @@ namespace DeanerySystem.Services
     public interface IGroupService
     {
         Task<IEnumerable<Group>> GetGroupsAsync();
-
-        Task<Group> GetGroupByIdAsync(int? groupId);
-        IEnumerable<Group> GetStudentGroups();
-        IEnumerable<Group> GetTeacherGroups();
         Task<MethodResult> SaveGroupAsync(Group group);
+        Task<Group> GetGroupById(int groupId);
+        Task<MethodResult> DeleteGroupAsync(int personId);
+        Task<bool> CheckIfNonEditable(Group group);
     }
 }
