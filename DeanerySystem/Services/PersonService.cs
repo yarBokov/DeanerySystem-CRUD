@@ -1,5 +1,4 @@
-﻿using Blazorise;
-using DeanerySystem.Data;
+﻿using DeanerySystem.Data;
 using DeanerySystem.Data.Entities;
 using DeanerySystem.Models;
 using Microsoft.EntityFrameworkCore;
@@ -47,10 +46,14 @@ namespace DeanerySystem.Services
         {
             try
             {
-                var personToDelete = await _context.People.FindAsync(personId);
-                _context.People.Remove(personToDelete);
-                await _context.SaveChangesAsync();
-                return MethodResult.Success();
+                var result = await _context.Groups.FirstOrDefaultAsync(g => g.Id == personId);
+                if (result != null)
+                {
+                    _context.Groups.Remove(result);
+                    await _context.SaveChangesAsync();
+                    return MethodResult.Success();
+                }
+                return MethodResult.Failure($"Не найден человек с Id: {personId}");
             }
             catch(Exception ex)
             {
@@ -67,7 +70,5 @@ namespace DeanerySystem.Services
                 personEntry.State = EntityState.Unchanged;
             }
         }
-
-
     }
 }

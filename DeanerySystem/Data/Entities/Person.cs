@@ -22,6 +22,4 @@ public partial class Person
     public virtual ICollection<Mark> MarkStudents { get; set; } = new List<Mark>();
 
     public virtual ICollection<Mark> MarkTeachers { get; set; } = new List<Mark>();
-
-    public Person Clone() => (Person)this.MemberwiseClone();
 }

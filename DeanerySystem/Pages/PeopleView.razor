@@ -1,4 +1,6 @@
 ﻿@page "/teachers"
+
+@inject IJSRuntime JsRuntime
 @inject IPersonService PersonService
 @inject IGroupService GroupService
 @inject DialogService DialogService
@@ -80,8 +82,8 @@ else
 @code {
     RadzenDataGrid<Person> peopleGrid;
     IEnumerable<Person> _people;
-    IEnumerable<Data.Entities.Group> originalGroups;
-    IEnumerable<Data.Entities.Group> groupsToDisplay;
+    IEnumerable<Data.Entities.Group>? originalGroups;
+    IEnumerable<Data.Entities.Group>? groupsToDisplay;
     char[] types = new char[] { 'P', 'S' };
 
     Person? personToUpdate;
@@ -136,7 +138,12 @@ else
 
         if (_people.Contains(person))
         {
-            //...
+            var deleteCheck = await PersonService.DeletePersonAsync(person.Id);
+            if (!deleteCheck.Status)
+            {
+                await JsRuntime.InvokeVoidAsync("console.log", deleteCheck.Error);
+                return;
+            }
             await peopleGrid.Reload();
         }
         else

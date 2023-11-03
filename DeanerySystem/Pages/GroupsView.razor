@@ -1,0 +1,150 @@
+﻿@page "/groups"
+
+@inject IGroupService GroupService
+@inject IJSRuntime JsRuntime
+@inject DialogService DialogService
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center">
+        <h3>Группы</h3>
+        <button class="btn btn-primary btn-sm" @onclick="OpenGroupFormAsync">+ Добавить группу</button>
+    </div>
+    <hr />
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Название</th>
+                <th>Год</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (_loading)
+            {
+                <tr>
+                    <td colspan="5" class="text-center">
+                        Загрузка групп...
+                    </td>
+                </tr>
+            }
+            else if (!_loading && (_groups is null || !_groups.Any()))
+            {
+                <tr>
+                    <td colspan="5" class="text-center">
+                        Категории не найдены!
+                    </td>
+                </tr>
+            }
+            else
+            {
+                int sno = 1;
+                foreach (var group in _groups!)
+                {
+                    <tr>
+                        <td>@(sno++)    </td>
+                        <td>@group.Id</td>
+                        <td>@group.Name</td>
+                        <td>@group.Year</td>
+                        <td>
+                                <button id="changeContentButton" type="button" class="btn btn-outline-primary btn-sm" @onclick="() => EditGroupAsync(group)" 
+                                    disabled="@GroupService.CheckIfNonEditable(group)">Редактировать</button>
+                        </td>
+                        <td>
+                                <button id="changeContentButton" type="button" class="btn btn-danger btn-sm" @onclick="() => DeleteGroupAsync(group)" 
+                                    disabled="@GroupService.CheckIfNonEditable(group)">Удалить группу</button>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+<dialog id="@_groupFormDialogId">
+    <SaveGroupForm 
+        Group="_groupModel"  
+        OnSaveGroup="OnSaveGroup" 
+        OnCloseForm="CloseGroupFormAsync"/>
+</dialog>
+
+<style type="text/css">
+    dialog{
+        padding: 0;
+        border: 2px solid black;
+    }
+</style>
+
+@code {
+    private const string _groupFormDialogId = "group-form";
+    private bool _loading = false;
+    private IEnumerable<Data.Entities.Group>? _groups = null;
+
+    private Data.Entities.Group _groupModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadGroupsAsync();
+    }
+
+    private async Task LoadGroupsAsync()
+    {
+        _loading = true;
+        try
+        {
+            _groups = await GroupService.GetGroupsAsync();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task OpenGroupFormAsync() =>
+        await JsRuntime.InvokeVoidAsync("window.openModal", _groupFormDialogId);
+
+    private async Task CloseGroupFormAsync()
+    {
+        _groupModel = new();
+        await JsRuntime.InvokeVoidAsync("window.closeModal", _groupFormDialogId);
+    }
+
+    private async Task EditGroupAsync(Data.Entities.Group group)
+    {
+        _groupModel = await GroupService.GetGroupById(group.Id);
+        await OpenGroupFormAsync();
+    }
+
+    private async Task OnSaveGroup(MethodResult saveGroupResult)
+    {
+        if (saveGroupResult.Status)
+        {
+            await AlertAsync("Группа сохранена!");
+            await LoadGroupsAsync();
+            await CloseGroupFormAsync();
+        }
+        else
+        {
+            await AlertAsync(saveGroupResult.Error!);
+        }
+    }
+
+    private async Task DeleteGroupAsync(Data.Entities.Group group)
+    {
+        var result = await DialogService.Confirm("Вы собираетесь удалить запись? Данные нельзя будет восстановить", "Удаление записи", new ConfirmOptions() { OkButtonText = "Да", CancelButtonText = "Нет" });
+        if (result is not true) return;
+        var deleteCheck = await GroupService.DeleteGroupAsync(group.Id);
+        if (!deleteCheck.Status)
+        {
+            await JsRuntime.InvokeVoidAsync("console.log", deleteCheck.Error);
+            return;
+        }
+        await LoadGroupsAsync();
+    }
+
+    private async Task AlertAsync(string message)
+    {
+        await JsRuntime.InvokeVoidAsync("window.alert", message);
+    }
+}

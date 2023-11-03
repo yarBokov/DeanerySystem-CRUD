@@ -1,6 +1,3 @@
-using Blazorise;
-using Blazorise.Bootstrap;
-using Blazorise.Icons.FontAwesome;
 using DeanerySystem.Data;
 using DeanerySystem.Services;
 using Microsoft.AspNetCore.Components;
@@ -13,8 +10,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddTransient<IPersonService, PersonService>()
-                .AddTransient<IGroupService, GroupService>();
+builder.Services.AddScoped<IPersonService, PersonService>()
+                .AddScoped<IGroupService, GroupService>()
+                .AddScoped<ISubjectService, SubjectService>();
 
 builder.Services.AddDbContext<DeaneryContext>(
     options => options.UseNpgsql(@"Host=localhost;Port=5432;Database=Deanery;Username=postgres;Password=Uo987kt"), 

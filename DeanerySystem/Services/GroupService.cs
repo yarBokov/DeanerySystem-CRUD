@@ -1,6 +1,8 @@
 ﻿using DeanerySystem.Data;
 using DeanerySystem.Data.Entities;
+using DeanerySystem.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace DeanerySystem.Services
 {
@@ -13,25 +15,63 @@ namespace DeanerySystem.Services
             _context = context;
         }
 
-        public async Task<string> GetGroupNameById(int? groupId)
+        public async Task<MethodResult> SaveGroupAsync(Group group)
         {
-            var result =  await _context.Groups.FindAsync(groupId);
-            return result.Name;
+            try
+            {
+                if (group.Id > 0)
+                {
+                    _context.Update(group);
+                }
+                else
+                {
+                    await _context.AddAsync(group);
+                }
+                await _context.SaveChangesAsync();
+                return MethodResult.Success();
+            }
+            catch (Exception ex)
+            {
+                return MethodResult.Failure(ex.Message);
+            }
         }
 
         public async Task<IEnumerable<Group>> GetGroupsAsync()
         {
-            return await _context.Groups.AsNoTracking().ToListAsync();
+            var result =  await _context.Groups.ToListAsync();
+            return result.OrderBy(result => result.Id);
         }
 
-        public IEnumerable<Group> GetStudentGroups()
+        public async Task<Group> GetGroupById(int groupId)
         {
-            return _context.Groups.Where(g => g.Name.Contains("TEACH") == false);
+            return await _context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
         }
 
-        public IEnumerable<Group> GetTeacherGroups()
+        public async Task<MethodResult> DeleteGroupAsync(int groupId)
         {
-            return _context.Groups.Where(g => g.Name.Contains("TEACH"));
+            try
+            {
+                var result = await _context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
+                if (result != null)
+                {
+                    _context.Groups.Remove(result);
+                    await _context.SaveChangesAsync();
+                    return MethodResult.Success();
+                }
+                return MethodResult.Failure($"Не найдена группа с Id: {groupId}");
+            }
+            catch (Exception ex)
+            {
+                return MethodResult.Failure(ex.Message);
+            }
+        }
+
+        public bool CheckIfNonEditable(Group group)
+        {
+            var peopleWithGroups = _context.People.Include("Group").ToList();
+            var person = peopleWithGroups.FirstOrDefault(p => p.GroupId == group.Id);
+            if (person is not null) return true;
+            return group.Name.Equals("TEACHERS IN HUMAN") || group.Name.Equals("TEACHERS IN TECH");
         }
     }
 }
