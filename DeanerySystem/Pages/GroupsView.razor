@@ -50,11 +50,11 @@
                         <td>@group.Year</td>
                         <td>
                                 <button id="changeContentButton" type="button" class="btn btn-outline-primary btn-sm" @onclick="() => EditGroupAsync(group)" 
-                                disabled="@(() => GroupService.CheckIfNonEditable(group))">Редактировать</button>
+                                    disabled="@GroupService.CheckIfNonEditable(group)">Редактировать</button>
                         </td>
                         <td>
                                 <button id="changeContentButton" type="button" class="btn btn-danger btn-sm" @onclick="() => DeleteGroupAsync(group)" 
-                                disabled="@(() => GroupService.CheckIfNonEditable(group))">Удалить группу</button>
+                                    disabled="@GroupService.CheckIfNonEditable(group)">Удалить группу</button>
                         </td>
                     </tr>
                 }
@@ -138,7 +138,9 @@
         if (!deleteCheck.Status)
         {
             await JsRuntime.InvokeVoidAsync("console.log", deleteCheck.Error);
+            return;
         }
+        await LoadGroupsAsync();
     }
 
     private async Task AlertAsync(string message)

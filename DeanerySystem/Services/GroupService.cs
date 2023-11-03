@@ -39,7 +39,7 @@ namespace DeanerySystem.Services
         public async Task<IEnumerable<Group>> GetGroupsAsync()
         {
             var result =  await _context.Groups.ToListAsync();
-            return result.OrderByDescending(result=> result.Name);
+            return result.OrderBy(result => result.Id);
         }
 
         public async Task<Group> GetGroupById(int groupId)
@@ -66,11 +66,12 @@ namespace DeanerySystem.Services
             }
         }
 
-        public async Task<bool> CheckIfNonEditable(Group group)
+        public bool CheckIfNonEditable(Group group)
         {
-            var peopleWithGroups = await _context.People.Include(p => p.Group).ToListAsync();
-            return group.Name!.Equals("TEACHERS IN TECH") || group.Name!.Equals("TEACHERS IN HUMAN") || 
-                   peopleWithGroups.FirstOrDefault(p => p.GroupId == group.Id)!.Group!.People.Any();
+            var peopleWithGroups = _context.People.Include("Group").ToList();
+            var person = peopleWithGroups.FirstOrDefault(p => p.GroupId == group.Id);
+            if (person is not null) return true;
+            return group.Name.Equals("TEACHERS IN HUMAN") || group.Name.Equals("TEACHERS IN TECH");
         }
     }
 }

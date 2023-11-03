@@ -82,8 +82,8 @@ else
 @code {
     RadzenDataGrid<Person> peopleGrid;
     IEnumerable<Person> _people;
-    IEnumerable<Data.Entities.Group> originalGroups;
-    IEnumerable<Data.Entities.Group> groupsToDisplay;
+    IEnumerable<Data.Entities.Group>? originalGroups;
+    IEnumerable<Data.Entities.Group>? groupsToDisplay;
     char[] types = new char[] { 'P', 'S' };
 
     Person? personToUpdate;
