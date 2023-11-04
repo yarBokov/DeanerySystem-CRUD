@@ -3,11 +3,12 @@
 @inject ISubjectService SubjectService
 @inject IJSRuntime JsRuntime
 @inject DialogService DialogService
+@inject TooltipService TooltipService
 
 <div class="container">
     <div class="d-flex justify-content-between align-items-center">
         <h3>Группы</h3>
-        <button class="btn btn-primary btn-sm" @onclick="OpenSubjectFormAsync">+ Добавить предмет</button>
+        <RadzenButton Variant="Variant.Flat" Click="@OpenSubjectFormAsync" Text="Добавить предмет" ButtonStyle="ButtonStyle.Primary"/>
     </div>
     <hr />
     <table class="table">
@@ -16,6 +17,7 @@
                 <th>#</th>
                 <th>ID</th>
                 <th>Название предмета</th>
+                <th>Наличие оценок по предмету</th>
                 <th></th>
                 <th></th>
             </tr>
@@ -43,16 +45,19 @@
                 foreach (var subject in _subjects!)
                 {
                     <tr>
-                        <td>@(sno++)    </td>
+                        <td>@(sno++)</td>
                         <td>@subject.Id</td>
                         <td>@subject.Name</td>
+                        <td>@(subject.Marks.Any() ? "ДА" : "НЕТ")</td>
                         <td>
-                            <button id="changeContentButton" type="button" class="btn btn-outline-primary btn-sm" @onclick="() => EditSubjectAsync(subject)" 
-                            disabled="@SubjectService.CheckIfNonEditable(subject)">Редактировать</button>
+                            <RadzenButton Variant="Variant.Flat" Click="@(args => EditSubjectAsync(subject))" Disabled="subject.Marks.Any()"
+                                Text="Редактировать" ButtonStyle="ButtonStyle.Primary" Shade="Shade.Lighter"
+                                MouseEnter="@(args => ShowTooltip(args, subject.Marks.Any(), new TooltipOptions(){ Position = TooltipPosition.Left, Delay=3000 }))"/>
                         </td>
                         <td>
-                            <button id="changeContentButton" type="button" class="btn btn-danger btn-sm" @onclick="() => DeleteSubjectAsync(subject)" 
-                            disabled="@SubjectService.CheckIfNonEditable(subject)">Удалить предмет</button>
+                            <RadzenButton Variant="Variant.Flat" Click="@(args => DeleteSubjectAsync(subject))" Disabled="subject.Marks.Any()"
+                                Text="Удалить предмет" ButtonStyle="ButtonStyle.Danger"
+                                MouseEnter="@(args => ShowTooltip(args, subject.Marks.Any(), new TooltipOptions(){ Position = TooltipPosition.Right, Delay=3000 }))"/>
                         </td>
                     </tr>
                 }
@@ -80,6 +85,9 @@
     private IEnumerable<Subject>? _subjects = null;
 
     private Subject _subjectModel = new();
+
+    void ShowTooltip(ElementReference elementReference, bool isDisabled, TooltipOptions options = null) =>
+        TooltipService.Open(elementReference, (isDisabled ? @"На эти данные есть ссылки в других таблицах" : "Работайте с данными на свой страх и риск!"), options);
 
     protected override async Task OnInitializedAsync()
     {

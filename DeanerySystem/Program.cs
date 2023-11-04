@@ -20,6 +20,7 @@ builder.Services.AddDbContext<DeaneryContext>(
 builder.Services.AddRadzenComponents();
 builder.Services.AddScoped<DialogService>();
 builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<TooltipService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

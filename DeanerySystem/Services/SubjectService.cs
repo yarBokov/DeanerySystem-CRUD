@@ -16,7 +16,7 @@ namespace DeanerySystem.Services
 
         public async Task<IEnumerable<Subject>> GetSubjectsAsync()
         {
-            var result = await _context.Subjects.ToListAsync();
+            var result = await _context.Subjects.Include("Marks").ToListAsync();
             return result.OrderBy(result => result.Id);
         }
 
@@ -62,13 +62,6 @@ namespace DeanerySystem.Services
             {
                 return MethodResult.Failure(ex.Message);
             }
-        }
-
-        public bool CheckIfNonEditable(Subject subject)
-        {
-            var marksWithSubjects = _context.Marks.Include("Subject").ToList();
-            var mark = marksWithSubjects.FirstOrDefault(m => m.SubjectId == subject.Id);
-            return mark is not null;
         }
     }
 }

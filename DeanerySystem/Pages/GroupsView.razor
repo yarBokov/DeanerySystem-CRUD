@@ -3,11 +3,12 @@
 @inject IGroupService GroupService
 @inject IJSRuntime JsRuntime
 @inject DialogService DialogService
+@inject TooltipService TooltipService
 
 <div class="container">
     <div class="d-flex justify-content-between align-items-center">
         <h3>Группы</h3>
-        <button class="btn btn-primary btn-sm" @onclick="OpenGroupFormAsync">+ Добавить группу</button>
+        <RadzenButton Variant="Variant.Flat" Click="@OpenGroupFormAsync" Text="Добавить группу" ButtonStyle="ButtonStyle.Primary"/>
     </div>
     <hr />
     <table class="table">
@@ -17,6 +18,7 @@
                 <th>ID</th>
                 <th>Название</th>
                 <th>Год</th>
+                <th>Кол-во человек в группе</th>
                 <th></th>
                 <th></th>
             </tr>
@@ -44,17 +46,20 @@
                 foreach (var group in _groups!)
                 {
                     <tr>
-                        <td>@(sno++)    </td>
+                        <td>@(sno++) </td>
                         <td>@group.Id</td>
                         <td>@group.Name</td>
                         <td>@group.Year</td>
+                        <td>@group.People.Count()</td>
                         <td>
-                                <button id="changeContentButton" type="button" class="btn btn-outline-primary btn-sm" @onclick="() => EditGroupAsync(group)" 
-                                    disabled="@GroupService.CheckIfNonEditable(group)">Редактировать</button>
+                            <RadzenButton Variant="Variant.Flat" Click="@(args => EditGroupAsync(group))" Disabled="group.People.Any()"
+                                Text="Редактировать" ButtonStyle="ButtonStyle.Primary" Shade="Shade.Lighter" 
+                                MouseEnter="@(args => ShowTooltip(args, group.People.Any(), new TooltipOptions(){ Position = TooltipPosition.Left, Delay=3000 }))"/>
                         </td>
                         <td>
-                                <button id="changeContentButton" type="button" class="btn btn-danger btn-sm" @onclick="() => DeleteGroupAsync(group)" 
-                                    disabled="@GroupService.CheckIfNonEditable(group)">Удалить группу</button>
+                            <RadzenButton Variant="Variant.Flat" Click="@(args => DeleteGroupAsync(group))" Disabled="group.People.Any()"
+                                Text="Удалить группу" ButtonStyle="ButtonStyle.Danger"
+                                MouseEnter="@(args => ShowTooltip(args, group.People.Any(), new TooltipOptions(){ Position = TooltipPosition.Right, Delay=3000 }))"/>
                         </td>
                     </tr>
                 }
@@ -82,6 +87,11 @@
     private IEnumerable<Data.Entities.Group>? _groups = null;
 
     private Data.Entities.Group _groupModel = new();
+
+    void ShowTooltip(ElementReference elementReference, bool isDisabled, TooltipOptions options = null) =>
+        TooltipService.Open(elementReference, (isDisabled ? @"Эти данные запрещено изменять/удалять
+                                                             либо на эти данные есть ссылки в других таблицах" : 
+                                                            "Работайте с данными на свой страх и риск!") , options);
 
     protected override async Task OnInitializedAsync()
     {
