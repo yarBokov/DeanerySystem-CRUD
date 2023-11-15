@@ -44,9 +44,12 @@ namespace DeanerySystem.Services
 
         public async Task<Group> GetGroupById(int groupId) => await _context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
 
-        public async Task<IEnumerable<Group>> GetGroupsByType(char type) => 
-            await _context.Groups.Include(g => g.People)
-                                 .Where(g => g.People.FirstOrDefault().Type == type).ToListAsync();
+        public async Task<IEnumerable<Group>> GetGroupsByType(char type)
+        {
+           return await _context.Groups.Include(g => g.People)
+                     .Where(g => g.People.FirstOrDefault().Type == type && 
+                     (type == 'P' ? g.People.FirstOrDefault().GroupId != 9999 : true )).ToListAsync();
+        }
 
         public async Task<MethodResult> DeleteGroupAsync(int groupId)
         {

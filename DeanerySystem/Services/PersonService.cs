@@ -43,13 +43,13 @@ namespace DeanerySystem.Services
 
         public async Task<IEnumerable<Person>> GetTeachersAsync()
         {
-            var result = await _context.People.Include("Group").Where(p => p.Type == 'P').ToListAsync();
+            var result = await _context.People.Include(p => p.Group).Include(p => p.MarkTeachers).Where(p => p.Type == 'P').ToListAsync();
             return result.OrderBy(result => result.Id);
         }
 
         public async Task<IEnumerable<Person>> GetStudentsAsync()
         {
-            var result = await _context.People.Include("Group").Where(p => p.Type == 'S').ToListAsync();
+            var result = await _context.People.Include(p => p.Group).Where(p => p.Type == 'S').ToListAsync();
             return result.OrderBy(result => result.Id);
         }
 
