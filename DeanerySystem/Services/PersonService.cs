@@ -37,20 +37,42 @@ namespace DeanerySystem.Services
 
         public async Task<IEnumerable<Person>> GetPeopleAsync()
         {
-            //return await _context.People.AsNoTracking().ToListAsync();
-            var people = _context.People.AsNoTracking().Include("Group");
-            return await people.ToListAsync();
+            var result = await _context.People.Include("Group").ToListAsync();
+            return result.OrderBy(result => result.Id);
         }
 
-        public async Task<MethodResult> DeletePersonAsync(int personId)
+        public async Task<IEnumerable<Person>> GetTeachersAsync()
+        {
+            var result = await _context.People.Include(p => p.Group).Include(p => p.MarkTeachers).Where(p => p.Type == 'P').ToListAsync();
+            return result.OrderBy(result => result.Id);
+        }
+
+        public async Task<IEnumerable<Person>> GetStudentsAsync()
+        {
+            var result = await _context.People.Include(p => p.Group).Where(p => p.Type == 'S').ToListAsync();
+            return result.OrderBy(result => result.Id);
+        }
+
+        public async Task<MethodResult> DeletePersonAsync(int personId, bool isTeacher)
         {
             try
             {
-                var result = await _context.Groups.FirstOrDefaultAsync(g => g.Id == personId);
-                if (result != null)
+                var personToDelete = await _context.People.Include(p => p.MarkStudents)
+                                                           .Include(p => p.MarkTeachers)
+                                                           .FirstOrDefaultAsync(p=> p.Id == personId);
+                if (personToDelete != null)
                 {
-                    _context.Groups.Remove(result);
-                    await _context.SaveChangesAsync();
+                    if (isTeacher)
+                    {
+                        if (personToDelete.MarkTeachers.Any())
+                        {
+                            await _context.Marks.Where(mark => personToDelete.MarkTeachers.Contains(mark))
+                                                .ForEachAsync(mark => mark.TeacherId = 9999);
+                            await _context.SaveChangesAsync();
+                        }
+                        _context.People.Remove(personToDelete);
+                        await _context.SaveChangesAsync();
+                    }
                     return MethodResult.Success();
                 }
                 return MethodResult.Failure($"Не найден человек с Id: {personId}");

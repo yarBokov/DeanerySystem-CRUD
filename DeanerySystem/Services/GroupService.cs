@@ -38,13 +38,17 @@ namespace DeanerySystem.Services
 
         public async Task<IEnumerable<Group>> GetGroupsAsync()
         {
-            var result =  await _context.Groups.Include("People").ToListAsync();
+            var result =  await _context.Groups.Include(g => g.People).ToListAsync();
             return result.OrderBy(result => result.Id);
         }
 
-        public async Task<Group> GetGroupById(int groupId)
+        public async Task<Group> GetGroupById(int groupId) => await _context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
+
+        public async Task<IEnumerable<Group>> GetGroupsByType(char type)
         {
-            return await _context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
+           return await _context.Groups.Include(g => g.People)
+                     .Where(g => g.People.FirstOrDefault().Type == type && 
+                     (type == 'P' ? g.People.FirstOrDefault().GroupId != 9999 : true )).ToListAsync();
         }
 
         public async Task<MethodResult> DeleteGroupAsync(int groupId)
