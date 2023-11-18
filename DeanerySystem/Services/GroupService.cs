@@ -39,7 +39,7 @@ namespace DeanerySystem.Services
         public async Task<IEnumerable<Group>> GetGroupsAsync()
         {
             var result =  await _context.Groups.Include(g => g.People).ToListAsync();
-            return result.OrderBy(result => result.Id);
+            return result.OrderBy(group => group.Id);
         }
 
         public async Task<Group> GetGroupById(int groupId) => await _context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);

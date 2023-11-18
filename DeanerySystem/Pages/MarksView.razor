@@ -1,0 +1,193 @@
+﻿@page "/marks"
+
+@inject IJSRuntime JsRuntime
+@inject IMarkService MarkService
+@inject IPersonService PersonService
+@inject IGroupService GroupService
+@inject DialogService DialogService
+
+@if (_marks == null)
+{
+        <p><em>Загрузка...</em></p>
+}
+else
+{
+
+        <style>
+            .rz-grid-table {
+                width: unset;
+            }
+        </style>
+        <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H3">Оценки</RadzenText>
+        <div class="container-fluid flex-xl-grow-1">
+            <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle_outline" 
+                class="mt-2 mb-4 rz-border-radius-4" Text="Добавить новую запись" 
+                Click="@InsertRow" Disabled=@(markToInsert != null || markToUpdate != null) />
+            <br />
+            <RadzenDataGrid @ref="marksGrid" AllowAlternatingRows="false" AllowFiltering="true" AllowColumnResize="true" Density="@density" 
+                AllowPaging="true" PageSize="6" AllowSorting="true" EditMode="Radzen.DataGridEditMode.Single"
+                Data="@_marks" TItem="Mark" RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow" FilterMode="FilterMode.Simple"
+                Sort="@Reset" Page="@Reset" Filter="@Reset" GridLines="DataGridGridLines.Both"
+            >
+
+                <HeaderTemplate>
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem" Class="rz-p-2">
+                        <RadzenCard class="my-2" style="display: flex; align-items: center; gap: 0.5rem">
+                            <div style="white-space:nowrap; margin-right: 8px">Плотность строк</div>
+                            <RadzenSelectBar @bind-Value="@density" TextProperty="Text" ValueProperty="Value" 
+                        Data="@(Enum.GetValues(typeof(Density)).Cast<Density>().Select(t => new {Text = $"{t}", Value=t }))" />
+                        </RadzenCard>
+                    </RadzenStack>
+                </HeaderTemplate>
+
+                <Columns>
+                    <RadzenDataGridColumn TItem="Mark" Property="Subject.Name" Title="Дисицплина" Width="210px" />
+
+                    <RadzenDataGridColumn TItem="Mark" Property="Student.SecondName" Title="ФИО студента" Width="280px">
+                        <Template Context="mark">
+                            @mark.Student.getFullName()
+                        </Template>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="Mark" Property="Teacher.SecondName" Title="ФИО преподавателя" Width="280px">
+                        <Template Context="mark">
+                            @if (mark.TeacherId == 9999)
+                            {
+                                <span style='color: var(--rz-danger)'>@mark.Teacher.getFullName()</span>
+                            }
+                            else
+                            {
+                                <span style='color: var(--rz-text-color)'>@mark.Teacher.getFullName()</span>
+                            }
+                        </Template>
+                        <EditTemplate Context="mark">
+                            @if (mark.TeacherId == 9999)
+                            {
+                                <RadzenDropDown @bind-Value="mark.TeacherId" Data="@teachers" 
+                                    TextProperty="FullName" ValueProperty="Id" Style="width: 100%; display: block" />
+                            }
+                            else
+                            {
+                                <span style='color: var(--rz-text-color)'>@mark.Teacher.getFullName()</span>
+                            }
+                    </EditTemplate>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="Mark" Property="Value" Title="Оценка" Width="30px" FilterValue="@markValue">
+                        <EditTemplate Context="mark">
+                            <RadzenNumeric @bind-Value="mark.Value" Style="width: 100%"/>
+                        </EditTemplate>
+
+                        <FilterTemplate>
+                            <RadzenNumeric @bind-Value=markValue ShowUpDown=false />
+                        </FilterTemplate>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="Mark" Context="mark" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                        <Template Context="mark">
+                            <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Large" Click="@(args => EditRow(mark))" @onclick:stopPropagation="true">
+                            </RadzenButton>
+                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Large" class="my-1 ms-1" Click="@(args => DeleteRow(mark))"  @onclick:stopPropagation="true">
+                            </RadzenButton>
+                        </Template>
+                        <EditTemplate Context="mark">
+                            <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(mark))">
+                            </RadzenButton>
+                            <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@((args) => CancelEdit(mark))">
+                            </RadzenButton>
+                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@(args => DeleteRow(mark))">
+                            </RadzenButton>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                </Columns>
+
+            </RadzenDataGrid>
+        </div>
+}
+@code {
+    RadzenDataGrid<Mark> marksGrid;
+    Density density = Density.Default;
+    IEnumerable<Mark> _marks;
+    List<TeacherModel> teachers;
+
+    Mark? markToUpdate;
+    Mark? markToInsert;
+
+    int? markValue;
+
+    private void Reset()
+    {
+        markToUpdate = null;
+        markToInsert = null;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        _marks = await MarkService.GetMarksAsync();
+        teachers = await PersonService.GetTeacherModelsAsync();
+    }
+
+    private async Task InsertRow()
+    {
+        markToInsert = new Mark();
+        await marksGrid.InsertRow(markToInsert);
+    }
+
+    private async Task SaveRow(Mark mark)
+    {
+        var result = await DialogService.Confirm("Вы собираетесь изменить данные?", "Редактирование", new ConfirmOptions() { OkButtonText = "Да", CancelButtonText = "Нет" });
+        if (result is true) await marksGrid.UpdateRow(mark);
+    }
+
+    private async Task EditRow(Mark mark)
+    {
+        markToUpdate = mark;
+        await marksGrid.EditRow(mark);
+    }
+
+    private async Task OnUpdateRow(Mark mark)
+    {
+        Reset();
+        await MarkService.SaveMarkAsync(mark);
+    }
+
+    private async Task DeleteRow(Mark mark)
+    {
+        var result = await DialogService.Confirm("Вы собираетесь удалить запись? ОЦ", "Удаление записи", new ConfirmOptions() { OkButtonText = "Да", CancelButtonText = "Нет" });
+        if (result is not true) return;
+        Reset();
+
+        if (_marks.Contains(mark))
+        {
+            var deleteCheck = await MarkService.DeleteMarkAsync(mark.Id);
+            if (!deleteCheck.Status)
+            {
+                await JsRuntime.InvokeVoidAsync("console.log", deleteCheck.Error);
+                return;
+            }
+            await marksGrid.Reload();
+        }
+        else
+        {
+            marksGrid.CancelEditRow(mark);
+            await marksGrid.Reload();
+        }
+    }
+
+    private async Task OnCreateRow(Mark mark)
+    {
+        await MarkService.SaveMarkAsync(mark);
+        markToInsert = null;
+    }
+
+    private void CancelEdit(Mark mark)
+    {
+        Reset();
+
+        marksGrid.CancelEditRow(mark);
+
+        MarkService.CheckEntries(mark);
+    }
+}
