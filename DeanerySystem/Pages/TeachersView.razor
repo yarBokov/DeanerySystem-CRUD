@@ -17,18 +17,17 @@ else
             width: unset;
         }
 
-        .centered-teachers-table {
+        .centered-table {
             margin: auto;
         }
     </style>
 
     <div class="container-fluid flex-xl-grow-1">
         <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle_outline" 
-                class="mt-2 mb-4" Text="Добавить новую запись" 
+                class="mt-2 mb-4 rz-border-radius-4" Text="Добавить новую запись" 
                 Click="@InsertRow" Disabled=@(personToInsert != null || personToUpdate != null) />
         <br />
-        <RadzenDataGrid @ref="teachersGrid" AllowAlternatingRows="false" AllowFiltering="true" AllowColumnResize="true" Density="@density"
-            AllowVirtualization=@allowVirtualization Style="@(allowVirtualization ? "height:400px;overflow:auto;" : "")" 
+        <RadzenDataGrid @ref="teachersGrid" AllowAlternatingRows="false" AllowFiltering="true" AllowColumnResize="true" Density="@density" 
             AllowPaging="true" PageSize="6" AllowSorting="true" EditMode="Radzen.DataGridEditMode.Single"
             Data="@_teachers" TItem="Person" RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow" 
             FilterCaseSensitivity="@filterCaseSensitivity" LogicalFilterOperator="@logicalFilterOperator" FilterMode="FilterMode.Simple"
@@ -43,19 +42,13 @@ else
                         Data="@(Enum.GetValues(typeof(Density)).Cast<Density>().Select(t => new {Text = $"{t}", Value=t }))" />
                     </RadzenCard>
                     <hr>
-                    <RadzenCheckBox @bind-Value="@allowVirtualization" Name="allowVirtualization"  />
-
-                    <RadzenLabel Text="Виртуализация" Component="allowVirtualization"/>
-                    <hr>
                     <hr>
                     <div style="display: flex; align-items: center">
                         <div style="white-space:nowrap; margin-right: 16px">Логический оператор:</div>
                         <RadzenDropDown @bind-Value="@logicalFilterOperator" TextProperty="Text" ValueProperty="Value" Change=@(args => teachersGrid.Reload())
                                     Data="@(Enum.GetValues(typeof(LogicalFilterOperator)).Cast<LogicalFilterOperator>().Select(t => new { Text = $"{t}".ToUpper(), Value = t }))" />
-                        <hr>
-                        <div style="white-space:nowrap; margin-left: 10px;margin-right: 16px">Чувствительность к регистру:</div>
-@*                            <RadzenDropDown @bind-Value="@filterCaseSensitivity" TextProperty="Text" ValueProperty="Value" Change=@(args => teachersGrid.Reload())
-                                    Data="@(Enum.GetValues(typeof(FilterCaseSensitivity)).Cast<FilterCaseSensitivity>().Select(t => new { Text = $"{t}", Value = t }))" />*@
+                        
+                        <div style="white-space:nowrap; margin-left: 32px;margin-right: 16px">Чувствительность к регистру:</div>
                         <RadzenSwitch @bind-Value=@caseSensitivityFlag Change="@(args => OnChangeCaseSensitivity(args))"/>
                     </div>
                 </RadzenStack>
@@ -88,7 +81,7 @@ else
                 <RadzenDataGridColumn TItem="Person" Filterable="false" Sortable="false" Width="150px" Title="Преподаёт:">
                     <Template Context="person">
                         <div class="container align-items-center justify-content-center">
-                            <table class="table centered-teachers-table">
+                            <table class="table centered-table">
                                 <thead>
                                     <tr>
                                         <th>Предмет</th>
@@ -120,7 +113,7 @@ else
                     </Template>
                 </RadzenDataGridColumn>
 
-                <RadzenDataGridColumn TItem="Person" Property="Group.Name" Title="Группа" Width="200px">
+                <RadzenDataGridColumn TItem="Person" Property="Group.Name" Title="Группа" Width="200px" >
                     <EditTemplate Context="person">
                         <RadzenDropDown @bind-Value="person.GroupId" Data="@_groups" 
                             TextProperty="Name" ValueProperty="Id" Style="width: 100%; display: block;"/>
@@ -150,7 +143,6 @@ else
 }
 @code {
     RadzenDataGrid<Person> teachersGrid;
-    private bool allowVirtualization;
     Density density = Density.Default;
     IEnumerable<Person> _teachers;
     IEnumerable<Data.Entities.Group> _groups;
