@@ -43,7 +43,7 @@ namespace DeanerySystem.Services
 
         public async Task<IEnumerable<Person>> GetTeachersAsync()
         {
-            var result = await _context.People.Include(p => p.Group).Include(p => p.MarkTeachers).Where(p => p.Type == 'P').ToListAsync();
+            var result = await _context.People.Include(p => p.Group).Include(p => p.MarkTeachers).ThenInclude(m => m.Subject).Where(p => p.Type == 'P').ToListAsync();
             return result.OrderBy(result => result.Id);
         }
 
