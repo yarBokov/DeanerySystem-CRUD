@@ -22,6 +22,8 @@ else
         }
     </style>
 
+    <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H3">Преподаватели</RadzenText>
+    <hr>
     <div class="container-fluid flex-xl-grow-1">
         <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle_outline" 
                 class="mt-2 mb-4 rz-border-radius-4" Text="Добавить новую запись" 
@@ -165,7 +167,7 @@ else
         await base.OnInitializedAsync();
 
         _teachers = await PersonService.GetTeachersAsync();
-        _groups = await GroupService.GetGroupsByType('P');
+        _groups = await GroupService.GetGroupsByTypeAsync('P');
     }
 
     private async Task InsertRow()
@@ -194,7 +196,7 @@ else
 
     private async Task DeleteRow(Person person)
     {
-        var result = await DialogService.Confirm("Вы собираетесь удалить запись? ОЦЕНКИ, ВЫСТАВЛЕННЫЕ ПРЕПОДАВАТЕЛЕМ БУДУТ СОХРАНЕНЫ В БУФЕР", "Удаление записи", new ConfirmOptions() { OkButtonText = "Да", CancelButtonText = "Нет" });
+        var result = await DialogService.Confirm("Вы собираетесь удалить запись? ОЦЕНКИ, ВЫСТАВЛЕННЫЕ ПРЕПОДАВАТЕЛЕМ, БУДУТ СОХРАНЕНЫ В БУФЕР", "Удаление записи", new ConfirmOptions() { OkButtonText = "Да", CancelButtonText = "Нет" });
         if (result is not true) return;
         Reset();
 

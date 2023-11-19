@@ -5,8 +5,6 @@
 @inject IGroupService GroupService
 @inject DialogService DialogService
 
-@implements IAsyncDisposable
-
 @if (_students == null)
 {
         <p><em>Загрузка...</em></p>
@@ -27,7 +25,8 @@ else
             }
         </style>
 
-
+        <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H3">Студенты</RadzenText>
+        <hr>
         <div class="container-fluid flex-xl-grow-1">
             <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle_outline" 
                 class="mt-2 mb-4 rz-border-radius-4" Text="Добавить новую запись" 
@@ -127,7 +126,8 @@ else
                         </EditTemplate>
 
                         <FilterTemplate>
-                            <RadzenDropDown @bind-Value=@selectedGroupNames Change="@OnSelectedGroupNamesChange" Data="@_groups.Select(g => g.Name).ToList()" Multiple="true" AllowClear="true"/>
+                            <RadzenDropDown @bind-Value=@selectedGroupNames Change="@OnSelectedGroupNamesChange"
+                                Data="@_groups.Select(g => g.Name).ToList()" Multiple="true" AllowClear="true"/>
                         </FilterTemplate>
 
                     </RadzenDataGridColumn>
@@ -187,7 +187,7 @@ else
         await base.OnInitializedAsync();
 
         _students = await PersonService.GetStudentsAsync();
-        _groups = await GroupService.GetGroupsByType('S');
+        _groups = await GroupService.GetGroupsByTypeAsync('S');
     }
 
     private async Task InsertRow()
