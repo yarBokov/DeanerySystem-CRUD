@@ -52,14 +52,14 @@
                         <td>@group.Year</td>
                         <td>@group.People.Count()</td>
                         <td>
-                            <RadzenButton Variant="Variant.Flat" Click="@(args => EditGroupAsync(group))" Disabled="group.People.Any()"
+                            <RadzenButton Variant="Variant.Flat" Click="@(args => EditGroupAsync(group))"
                                 Text="Редактировать" ButtonStyle="ButtonStyle.Primary" Shade="Shade.Lighter" 
-                                MouseEnter="@(args => ShowTooltip(args, group.People.Any(), new TooltipOptions(){ Position = TooltipPosition.Left, Delay=3000 }))"/>
+                                MouseEnter="@(args => ShowTooltip(args, group.People.Any(), new TooltipOptions(){ Position = TooltipPosition.Left, Delay=1500 }))"/>
                         </td>
                         <td>
                             <RadzenButton Variant="Variant.Flat" Click="@(args => DeleteGroupAsync(group))" Disabled="group.People.Any()"
                                 Text="Удалить группу" ButtonStyle="ButtonStyle.Danger"
-                                MouseEnter="@(args => ShowTooltip(args, group.People.Any(), new TooltipOptions(){ Position = TooltipPosition.Right, Delay=3000 }))"/>
+                                MouseEnter="@(args => ShowTooltip(args, group.People.Any(), new TooltipOptions(){ Position = TooltipPosition.Right, Delay=1500 }))"/>
                         </td>
                     </tr>
                 }

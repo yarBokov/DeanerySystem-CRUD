@@ -51,6 +51,12 @@ namespace DeanerySystem.Services
             return result.OrderBy(result => result.Id);
         }
 
+        public async Task<List<PersonModel>> GetPersonModelsAsync(char groupType)
+        {
+            var baseList = await _context.People.Where(p => p.Type == groupType && p.GroupId != 9999).ToListAsync();
+            return baseList.Select(p => new PersonModel { Id=p.Id, FullName=p.getFullName() }).ToList();
+        }
+
         public async Task<MethodResult> DeletePersonAsync(int personId, bool isTeacher)
         {
             try
@@ -68,9 +74,18 @@ namespace DeanerySystem.Services
                                                 .ForEachAsync(mark => mark.TeacherId = 9999);
                             await _context.SaveChangesAsync();
                         }
-                        _context.People.Remove(personToDelete);
-                        await _context.SaveChangesAsync();
                     }
+                    else
+                    {
+                        if (personToDelete.MarkStudents.Any())
+                        {
+                            var marksToDelete = await _context.Marks.Where(mark => personToDelete.MarkStudents.Contains(mark)).ToListAsync();
+                            _context.Marks.RemoveRange(marksToDelete);
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+                    _context.People.Remove(personToDelete);
+                    await _context.SaveChangesAsync();
                     return MethodResult.Success();
                 }
                 return MethodResult.Failure($"Не найден человек с Id: {personId}");

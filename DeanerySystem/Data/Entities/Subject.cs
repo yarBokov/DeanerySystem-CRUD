@@ -11,13 +11,19 @@ public partial class Subject
 
     public virtual ICollection<Mark> Marks { get; set; } = new List<Mark>();
 
-    public double getAverageMark()
+    public double getAverageMark() =>
+        getAverageMarkInList(Marks);
+
+    public double getAverageMarkByGroup(int groupId) =>
+        getAverageMarkInList(Marks.Where(m => m.Student.GroupId == groupId));
+
+    private double getAverageMarkInList(IEnumerable<Mark> marks)
     {
         int? markSum = 0;
-        foreach(var mark in Marks)
+        foreach (var mark in marks)
         {
             markSum += mark.Value;
         }
-        return (double)markSum / Marks.Count();
+        return (double)markSum / marks.Count();
     }
 }

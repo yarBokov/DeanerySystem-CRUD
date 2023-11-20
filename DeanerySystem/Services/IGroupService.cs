@@ -9,6 +9,6 @@ namespace DeanerySystem.Services
         Task<MethodResult> SaveGroupAsync(Group group);
         Task<Group> GetGroupById(int groupId);
         Task<MethodResult> DeleteGroupAsync(int personId);
-        Task<IEnumerable<Group>> GetGroupsByType(char type);
+        Task<IEnumerable<Group>> GetGroupsByTypeAsync(char type);
     }
 }

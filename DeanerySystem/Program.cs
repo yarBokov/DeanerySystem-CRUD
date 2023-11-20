@@ -12,7 +12,8 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<IPersonService, PersonService>()
                 .AddScoped<IGroupService, GroupService>()
-                .AddScoped<ISubjectService, SubjectService>();
+                .AddScoped<ISubjectService, SubjectService>()
+                .AddScoped<IMarkService, MarkService>();
 
 builder.Services.AddDbContext<DeaneryContext>(
     options => options.UseNpgsql(@"Host=localhost;Port=5432;Database=Deanery;Username=postgres;Password=Uo987kt"), 
