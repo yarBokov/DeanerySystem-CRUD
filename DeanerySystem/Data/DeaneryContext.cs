@@ -24,10 +24,6 @@ public partial class DeaneryContext : DbContext
 
     public virtual DbSet<Subject> Subjects { get; set; }
 
-    //public virtual DbSet<TeacherSubjectAvg> TeacherSubjectAvgs { get; set; }
-
-    //public virtual DbSet<YearAvg> YearAvgs { get; set; }
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=Deanery;Username=postgres;Password=Uo987kt");
 
@@ -60,6 +56,7 @@ public partial class DeaneryContext : DbContext
             entity.Property(e => e.StudentId).HasColumnName("student_id");
             entity.Property(e => e.SubjectId).HasColumnName("subject_id");
             entity.Property(e => e.TeacherId).HasColumnName("teacher_id");
+            entity.Property(e => e.Term).HasColumnName("term");
             entity.Property(e => e.Value).HasColumnName("value");
 
             entity.HasOne(d => d.Student).WithMany(p => p.MarkStudents)
@@ -117,30 +114,7 @@ public partial class DeaneryContext : DbContext
                 .HasColumnName("name");
         });
 
-        //modelBuilder.Entity<TeacherSubjectAvg>(entity =>
-        //{
-        //    entity
-        //        .HasNoKey()
-        //        .ToView("teacher_subject_avg");
-
-        //    entity.Property(e => e.AvgMark).HasColumnName("avg_mark");
-        //    entity.Property(e => e.SubjectName)
-        //        .HasMaxLength(50)
-        //        .HasColumnName("subject_name");
-        //    entity.Property(e => e.TeacherName).HasColumnName("teacher_name");
-        //});
-
-        //modelBuilder.Entity<YearAvg>(entity =>
-        //{
-        //    entity
-        //        .HasNoKey()
-        //        .ToView("year_avg");
-
-        //    entity.Property(e => e.AvgMark).HasColumnName("avg_mark");
-        //    entity.Property(e => e.Year).HasColumnName("year");
-        //});
-
-        //OnModelCreatingPartial(modelBuilder);
+        OnModelCreatingPartial(modelBuilder);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

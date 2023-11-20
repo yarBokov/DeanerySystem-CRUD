@@ -151,7 +151,7 @@ else
                         </FilterTemplate>
                     </RadzenDataGridColumn>
 
-                    <RadzenDataGridColumn TItem="Mark" Title="Средний балл в группе" Width="180px" Filterable="false">
+                    <RadzenDataGridColumn TItem="Mark" Title="Средний балл в группе" Width="80px" Filterable="false">
                         <Template Context="mark">
                             @String.Format("{0:0.000}", @mark.Subject.getAverageMarkByGroup(mark.Student.GroupId.Value))
                         </Template>
@@ -159,6 +159,23 @@ else
                         <EditTemplate>
                             <RadzenProgressBar ProgressBarStyle="ProgressBarStyle.Info" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
                         </EditTemplate>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="Mark" Property="Term" Title="Семестр" Width="100px" FilterValue="@termValueFilter">
+                        <EditTemplate Context="mark">
+                            <RadzenDropDown @bind-Value="@termValue" Style="width: 100%" Data="@terms"/>
+                        </EditTemplate>
+
+                        <FilterTemplate>
+                            <div class="d-flex justify-content-center">
+                                <RadzenSelectBar class="bg-white rounded-pill my-auto" @bind-Value=@termValueFilter TValue="int" Size="ButtonSize.Small">
+                                    <Items>
+                                        <RadzenSelectBarItem Icon="done" Text="1" Value="1" />
+                                        <RadzenSelectBarItem Icon="done" Text="2" Value="2"/>
+                                    </Items>
+                                </RadzenSelectBar>
+                            </div>
+                        </FilterTemplate>
                     </RadzenDataGridColumn>
 
                     <RadzenDataGridColumn TItem="Mark" Context="mark" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
@@ -190,6 +207,7 @@ else
     IEnumerable<Subject> subjects;
     List<PersonModel> teachers;
     List<PersonModel> students;
+    int[] terms = new int[] { 1, 2 };
     private bool _loading = false;
     private bool isInserting = false;
 
@@ -198,6 +216,9 @@ else
 
     int? markValue;
     IEnumerable<string> selectedGroupNames;
+
+    int? termValue;
+    int termValueFilter;
 
     LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.And;
     FilterCaseSensitivity filterCaseSensitivity = FilterCaseSensitivity.CaseInsensitive;
@@ -230,6 +251,7 @@ else
         students = await PersonService.GetPersonModelsAsync('S');
         subjects = await SubjectService.GetSubjectsAsync();
         groups = await GroupService.GetGroupsByTypeAsync('S');
+        termValueFilter = (DateTime.Now.Month < 9 && DateTime.Now.Month > 1 ? 2 : 1);
     }
 
     private async Task InsertRow()
