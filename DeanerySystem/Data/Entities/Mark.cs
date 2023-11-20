@@ -15,6 +15,8 @@ public partial class Mark
 
     public int? Value { get; set; }
 
+    public int? Term { get; set; }
+
     public virtual Person? Student { get; set; }
 
     public virtual Subject? Subject { get; set; }
