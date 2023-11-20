@@ -24,6 +24,6 @@ public partial class Subject
         {
             markSum += mark.Value;
         }
-        return (double)markSum / Marks.Count();
+        return (double)markSum / marks.Count();
     }
 }

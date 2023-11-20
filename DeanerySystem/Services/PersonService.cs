@@ -51,10 +51,10 @@ namespace DeanerySystem.Services
             return result.OrderBy(result => result.Id);
         }
 
-        public async Task<List<TeacherModel>> GetTeacherModelsAsync()
+        public async Task<List<PersonModel>> GetPersonModelsAsync(char groupType)
         {
-            var baseList = await _context.People.Where(p => p.Type == 'P' && p.GroupId != 9999).ToListAsync();
-            return baseList.Select(p => new TeacherModel { Id=p.Id, FullName=p.getFullName() }).ToList();
+            var baseList = await _context.People.Where(p => p.Type == groupType && p.GroupId != 9999).ToListAsync();
+            return baseList.Select(p => new PersonModel { Id=p.Id, FullName=p.getFullName() }).ToList();
         }
 
         public async Task<MethodResult> DeletePersonAsync(int personId, bool isTeacher)

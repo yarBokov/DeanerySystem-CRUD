@@ -50,14 +50,14 @@
                         <td>@subject.Name</td>
                         <td>@(subject.Marks.Any() ? "ДА" : "НЕТ")</td>
                         <td>
-                            <RadzenButton Variant="Variant.Flat" Click="@(args => EditSubjectAsync(subject))" Disabled="subject.Marks.Any()"
+                            <RadzenButton Variant="Variant.Flat" Click="@(args => EditSubjectAsync(subject))"
                                 Text="Редактировать" ButtonStyle="ButtonStyle.Primary" Shade="Shade.Lighter"
-                                MouseEnter="@(args => ShowTooltip(args, subject.Marks.Any(), new TooltipOptions(){ Position = TooltipPosition.Left, Delay=3000 }))"/>
+                                MouseEnter="@(args => ShowTooltip(args, subject.Marks.Any(), new TooltipOptions(){ Position = TooltipPosition.Left, Delay=1500 }))"/>
                         </td>
                         <td>
                             <RadzenButton Variant="Variant.Flat" Click="@(args => DeleteSubjectAsync(subject))" Disabled="subject.Marks.Any()"
                                 Text="Удалить предмет" ButtonStyle="ButtonStyle.Danger"
-                                MouseEnter="@(args => ShowTooltip(args, subject.Marks.Any(), new TooltipOptions(){ Position = TooltipPosition.Right, Delay=3000 }))"/>
+                                MouseEnter="@(args => ShowTooltip(args, subject.Marks.Any(), new TooltipOptions(){ Position = TooltipPosition.Right, Delay=1500 }))"/>
                         </td>
                     </tr>
                 }

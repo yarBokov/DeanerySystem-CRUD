@@ -40,7 +40,7 @@ namespace DeanerySystem.Services
             var result = await _context.Marks.Include(m => m.Teacher)
                                        .Include(m => m.Subject).ThenInclude(s => s.Marks)
                                        .Include(m => m.Student).ThenInclude(s => s.Group).ToListAsync();
-            return result.OrderBy(mark => mark.Student.GroupId).ThenBy(mark => mark.Student.SecondName);
+            return result.OrderBy(mark => mark.Student.GroupId).ThenBy(mark => mark.Student.SecondName).ThenBy(mark => mark.Subject.Name);
         }
 
         public async Task<MethodResult> DeleteMarkAsync(int markId)

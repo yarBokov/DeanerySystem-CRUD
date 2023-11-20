@@ -10,6 +10,6 @@ namespace DeanerySystem.Services
         void CheckEntries(Person person);
         Task<IEnumerable<Person>> GetTeachersAsync();
         Task<IEnumerable<Person>> GetStudentsAsync();
-        Task<List<TeacherModel>> GetTeacherModelsAsync();
+        Task<List<PersonModel>> GetPersonModelsAsync(char groupType);
     }
 }

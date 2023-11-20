@@ -4,12 +4,17 @@
 @inject IMarkService MarkService
 @inject IPersonService PersonService
 @inject IGroupService GroupService
+@inject ISubjectService SubjectService
 @inject NavigationManager NavigationManager
 @inject DialogService DialogService
 
-@if (_marks == null)
+@if (_loading)
 {
     <p><em>Загрузка...</em></p>
+}
+else if (!_loading && (_marks is null || !_marks.Any()))
+{
+    <p><h2>Данные не найдены!</h2></p>
 }
 else
 {
@@ -71,19 +76,43 @@ else
                 </HeaderTemplate>
 
                 <Columns>
-                    <RadzenDataGridColumn TItem="Mark" Property="Subject.Name" Title="Дисицплина" Width="180px" />
+                    <RadzenDataGridColumn TItem="Mark" Property="Subject.Name" Title="Дисицплина" Width="100px" Frozen="true">
+                        <EditTemplate Context="mark">
+                            @if(isInserting)
+                            {
+                                <RadzenDropDown @bind-Value="mark.SubjectId" Data="@subjects" AllowFiltering="true" AllowClear="true"
+                                    TextProperty="Name" ValueProperty="Id" Style="width: 100%; display: block" />
+                            }
+                            else
+                            {
+                                <span style='color: var(--rz-text-color)'>@mark.Subject.Name</span>                            
+                            }
+                    </EditTemplate>
+                    </RadzenDataGridColumn>
 
                     <RadzenDataGridColumn TItem="Mark" Property="Student.SecondName" Title="ФИО студента" Width="280px">
                         <Template Context="mark">
                             @mark.Student.getFullName()
                         </Template>
+
+                        <EditTemplate Context="mark">
+                            @if(isInserting)
+                            {
+                                <RadzenDropDown @bind-Value="mark.StudentId" Data="@students" AllowFiltering="true" AllowClear="true"
+                                    TextProperty="FullName" ValueProperty="Id" Style="width: 100%; display: block" />
+                            }
+                            else
+                            {
+                                <span style='color: var(--rz-text-color)'>@mark.Student.getFullName()</span>
+                            }
+                    </EditTemplate>
                     </RadzenDataGridColumn>
 
-                    <RadzenDataGridColumn TItem="Mark" Property="Student.Group.Name" Title="Группа" Width="200px"
+                    <RadzenDataGridColumn TItem="Mark" Property="Student.Group.Name" Title="Группа" Width="100px"
                         FilterOperator="FilterOperator.Contains" LogicalFilterOperator="LogicalFilterOperator.Or" FilterValue="@selectedGroupNames">
 
                         <FilterTemplate>
-                            <RadzenDropDown @bind-Value=@selectedGroupNames Change="@OnSelectedGroupNamesChange" 
+                            <RadzenDropDown @bind-Value=@selectedGroupNames Change="@OnSelectedGroupNamesChange" AllowFiltering="true"
                                 Data="@groups.Select(g => g.Name).ToList()" Multiple="true" AllowClear="true"/>
                         </FilterTemplate>
                     </RadzenDataGridColumn>
@@ -100,19 +129,19 @@ else
                             }
                         </Template>
                         <EditTemplate Context="mark">
-                            @if (mark.TeacherId == 9999)
+                            @if (mark.TeacherId == 9999 || isInserting)
                             {
-                                <RadzenDropDown @bind-Value="mark.TeacherId" Data="@teachers" 
+                                <RadzenDropDown @bind-Value="mark.TeacherId" Data="@teachers" AllowFiltering="true" AllowClear="true"
                                     TextProperty="FullName" ValueProperty="Id" Style="width: 100%; display: block" />
                             }
                             else
                             {
                                 <span style='color: var(--rz-text-color)'>@mark.Teacher.getFullName()</span>
                             }
-                    </EditTemplate>
+                        </EditTemplate>
                     </RadzenDataGridColumn>
 
-                    <RadzenDataGridColumn TItem="Mark" Property="Value" Title="Оценка" Width="30px" FilterValue="@markValue">
+                    <RadzenDataGridColumn TItem="Mark" Property="Value" Title="Оценка" Width="80px" FilterValue="@markValue">
                         <EditTemplate Context="mark">
                             <RadzenNumeric @bind-Value="mark.Value" Style="width: 100%"/>
                         </EditTemplate>
@@ -122,10 +151,14 @@ else
                         </FilterTemplate>
                     </RadzenDataGridColumn>
 
-                    <RadzenDataGridColumn TItem="Mark" Property="mark.Subject" Title="Средний балл в группе" Width="90px">
+                    <RadzenDataGridColumn TItem="Mark" Title="Средний балл в группе" Width="180px" Filterable="false">
                         <Template Context="mark">
                             @String.Format("{0:0.000}", @mark.Subject.getAverageMarkByGroup(mark.Student.GroupId.Value))
                         </Template>
+
+                        <EditTemplate>
+                            <RadzenProgressBar ProgressBarStyle="ProgressBarStyle.Info" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+                        </EditTemplate>
                     </RadzenDataGridColumn>
 
                     <RadzenDataGridColumn TItem="Mark" Context="mark" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
@@ -153,8 +186,12 @@ else
     RadzenDataGrid<Mark> marksGrid;
     Density density = Density.Default;
     IEnumerable<Mark> _marks;
-    List<TeacherModel> teachers;
     IEnumerable<Data.Entities.Group> groups;
+    IEnumerable<Subject> subjects;
+    List<PersonModel> teachers;
+    List<PersonModel> students;
+    private bool _loading = false;
+    private bool isInserting = false;
 
     Mark? markToUpdate;
     Mark? markToInsert;
@@ -172,17 +209,32 @@ else
         markToInsert = null;
     }
 
+    private async Task LoadDataAsync()
+    {
+        _loading = true;
+        try
+        {
+            _marks = await MarkService.GetMarksAsync();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-
-        _marks = await MarkService.GetMarksAsync();
-        teachers = await PersonService.GetTeacherModelsAsync();
+        await LoadDataAsync();
+        teachers = await PersonService.GetPersonModelsAsync('P');
+        students = await PersonService.GetPersonModelsAsync('S');
+        subjects = await SubjectService.GetSubjectsAsync();
         groups = await GroupService.GetGroupsByTypeAsync('S');
     }
 
     private async Task InsertRow()
     {
+        isInserting = true;
         markToInsert = new Mark();
         await marksGrid.InsertRow(markToInsert);
     }
@@ -190,7 +242,12 @@ else
     private async Task SaveRow(Mark mark)
     {
         var result = await DialogService.Confirm("Вы собираетесь изменить данные?", "Редактирование", new ConfirmOptions() { OkButtonText = "Да", CancelButtonText = "Нет" });
-        if (result is true) await marksGrid.UpdateRow(mark);
+        if (result is true) 
+        {
+            await marksGrid.UpdateRow(mark);
+            await LoadDataAsync();
+            await marksGrid.Reload();
+        }
     }
 
     private async Task EditRow(Mark mark)
@@ -219,6 +276,7 @@ else
                 await JsRuntime.InvokeVoidAsync("console.log", deleteCheck.Error);
                 return;
             }
+            await LoadDataAsync();
             await marksGrid.Reload();
         }
         else
@@ -232,6 +290,7 @@ else
     {
         await MarkService.SaveMarkAsync(mark);
         markToInsert = null;
+        isInserting = false;
     }
 
     private void CancelEdit(Mark mark)

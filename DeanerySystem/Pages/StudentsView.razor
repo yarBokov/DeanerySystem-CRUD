@@ -5,9 +5,13 @@
 @inject IGroupService GroupService
 @inject DialogService DialogService
 
-@if (_students == null)
+@if (_loading)
 {
-        <p><em>Загрузка...</em></p>
+    <p><em>Загрузка...</em></p>
+}
+else if (!_loading && (_students is null || !_students.Any()))
+{
+    <p><h2>Данные не найдены!</h2></p>
 }
 else
 {
@@ -121,12 +125,12 @@ else
                     <RadzenDataGridColumn TItem="Person" Property="Group.Name" Title="Группа" Width="200px"
                         FilterOperator="FilterOperator.Contains" LogicalFilterOperator="LogicalFilterOperator.Or" FilterValue="@selectedGroupNames">
                         <EditTemplate Context="person">
-                            <RadzenDropDown @bind-Value="person.GroupId" Data="@_groups" 
+                            <RadzenDropDown @bind-Value="person.GroupId" Data="@_groups" AllowFiltering="true" AllowClear="true"
                             TextProperty="Name" ValueProperty="Id" Style="width: 100%; display: block"/>
                         </EditTemplate>
 
                         <FilterTemplate>
-                            <RadzenDropDown @bind-Value=@selectedGroupNames Change="@OnSelectedGroupNamesChange"
+                            <RadzenDropDown @bind-Value=@selectedGroupNames Change="@OnSelectedGroupNamesChange" AllowFiltering="true"
                                 Data="@_groups.Select(g => g.Name).ToList()" Multiple="true" AllowClear="true"/>
                         </FilterTemplate>
 
@@ -165,6 +169,7 @@ else
     Density density = Density.Default;
     IEnumerable<Person> _students;
     IEnumerable<Data.Entities.Group> _groups;
+    private bool _loading = false;
 
     Person? personToUpdate;
     Person? personToInsert;
@@ -182,24 +187,42 @@ else
         personToUpdate = null;
     }
 
+    private async Task LoadDataAsync()
+    {
+        _loading = true;
+        try
+        {
+            _students = await PersonService.GetStudentsAsync();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-
-        _students = await PersonService.GetStudentsAsync();
+        await LoadDataAsync();
         _groups = await GroupService.GetGroupsByTypeAsync('S');
     }
 
     private async Task InsertRow()
     {
         personToInsert = new Person();
+        personToInsert.Type = 'S';
         await studentsGrid.InsertRow(personToInsert);
     }
 
     private async Task SaveRow(Person person)
     {
         var result = await DialogService.Confirm("Вы собираетесь изменить данные?", "Редактирование", new ConfirmOptions() { OkButtonText = "Да", CancelButtonText = "Нет" });
-        if (result is true) await studentsGrid.UpdateRow(person);
+        if (result is true)
+        {
+            await studentsGrid.UpdateRow(person);
+            await LoadDataAsync();
+            await studentsGrid.Reload();
+        }
     }
 
     private async Task EditRow(Person person)
@@ -228,6 +251,7 @@ else
                 await JsRuntime.InvokeVoidAsync("console.log", deleteCheck.Error);
                 return;
             }
+            await LoadDataAsync();
             await studentsGrid.Reload();
         }
         else

@@ -1,6 +1,6 @@
 ﻿namespace DeanerySystem.Models
 {
-    public class TeacherModel
+    public class PersonModel
     {
         public int Id { get; set; }
 
