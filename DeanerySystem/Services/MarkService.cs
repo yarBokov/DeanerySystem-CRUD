@@ -3,6 +3,7 @@ using DeanerySystem.Data.Entities;
 using DeanerySystem.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 
 namespace DeanerySystem.Services
 {
@@ -69,6 +70,36 @@ namespace DeanerySystem.Services
                 markEntry.CurrentValues.SetValues(markEntry.OriginalValues);
                 markEntry.State = EntityState.Unchanged;
             }
+        }
+
+        public List<MarkDistrModel> GetMarkDistrs()
+        {
+            List<MarkDistrModel> markDistrs = new List<MarkDistrModel>();
+            int marksCount = 0;
+            for (int i = 2; i < 6; i++)
+            {
+                for (int j = 1; j < 3; j++)
+                {
+                    foreach (var subject in _context.Subjects.Include(s => s.Marks).Where(s => s.Name != null).ToList())
+                    {
+                        foreach (var group in _context.Groups.Include(g => g.People).Where(g => g.People.FirstOrDefault().Type == 'S').ToList())
+                        {
+                            marksCount = subject.Marks.Where(m =>
+                                    m.Term == j && m.Value == i && group.People.Select(g => g.Id).ToList().Contains(m.StudentId.Value)).Count();
+                            if (marksCount > 0)
+                                markDistrs.Add(new MarkDistrModel
+                                {
+                                    Term = j,
+                                    MarkNumber = i.ToString(),
+                                    GroupId = group.Id,
+                                    SubjectId = subject.Id,
+                                    MarkCount = marksCount,
+                                });
+                        }
+                    }
+                }
+            }
+            return markDistrs;
         }
     }
 }

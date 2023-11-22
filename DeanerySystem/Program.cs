@@ -15,8 +15,9 @@ builder.Services.AddScoped<IPersonService, PersonService>()
                 .AddScoped<ISubjectService, SubjectService>()
                 .AddScoped<IMarkService, MarkService>();
 
+var connectionString = builder.Configuration.GetConnectionString("DeanerySystem");
 builder.Services.AddDbContext<DeaneryContext>(
-    options => options.UseNpgsql(@"Host=localhost;Port=5432;Database=Deanery;Username=postgres;Password=Uo987kt"), 
+    options => options.UseNpgsql(connectionString), 
     ServiceLifetime.Transient);
 builder.Services.AddRadzenComponents();
 builder.Services.AddScoped<DialogService>();

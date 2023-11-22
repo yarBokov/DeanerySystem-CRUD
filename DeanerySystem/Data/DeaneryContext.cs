@@ -25,7 +25,11 @@ public partial class DeaneryContext : DbContext
     public virtual DbSet<Subject> Subjects { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=Deanery;Username=postgres;Password=Uo987kt");
+    {
+        base.OnConfiguring(optionsBuilder);
+        //optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=Deanery;Username=postgres;Password=Uo987kt");
+    }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
