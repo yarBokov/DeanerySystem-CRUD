@@ -1,9 +1,10 @@
 ﻿namespace DeanerySystem.Models
 {
-    public class AvgMarkDynamicModel
+    public class AvgMarkTermModel
     {
         public double AvgMark { get; set; }
-        public string YearTerm { get; set; }
+        public string Term { get; set; }
+        public int GroupId { get; set; }
         public int SubjectId { get; set; }
     }
 }

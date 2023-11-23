@@ -78,11 +78,11 @@ namespace DeanerySystem.Services
             int marksCount = 0;
             for (int i = 2; i < 6; i++)
             {
-                for (int j = 1; j < 3; j++)
-                {
-                    foreach (var subject in _context.Subjects.Include(s => s.Marks).Where(s => s.Name != null).ToList())
+                foreach (var subject in _context.Subjects.Include(s => s.Marks).Where(s => s.Name != null).ToList())
                     {
-                        foreach (var group in _context.Groups.Include(g => g.People).Where(g => g.People.FirstOrDefault().Type == 'S').ToList())
+                    foreach (var group in _context.Groups.Include(g => g.People).Where(g => g.People.FirstOrDefault().Type == 'S').ToList())
+                    {
+                        for (int j = 1; j < group.getMaxTerm() + 1; j++)
                         {
                             marksCount = subject.Marks.Where(m =>
                                     m.Term == j && m.Value == i && group.People.Select(g => g.Id).ToList().Contains(m.StudentId.Value)).Count();
@@ -101,29 +101,28 @@ namespace DeanerySystem.Services
             }
             return markDistrs;
         }
-
-        public List<AvgMarkDynamicModel> GetAvgMarkDynamics()
+        public List<AvgMarkTermModel> GetAvgMarkTermModels()
         {
-            List<AvgMarkDynamicModel> avgMarkDynamicModels= new List<AvgMarkDynamicModel>();
+            List<AvgMarkTermModel> avgMarks = new List<AvgMarkTermModel>();
             foreach (var subject in _context.Subjects.Include(s => s.Marks).Where(s => s.Name != null).ToList())
             {
-                foreach (var group in _context.Groups.Include(g => g.People).Where(g => 
-                    g.People.FirstOrDefault().Type == 'S' && g.People.Any()).OrderBy(g => g.Year).ToList())
+                foreach(var group in _context.Groups.Include(g => g.People).Where(g => g.People.FirstOrDefault().Type == 'S').ToList())
                 {
-                    if ((DateTime.Now.Year - group.Year) <= 5)
-                        for (int i = 1; i < 3; i++)
+                    for(int i = 1;i < group.getMaxTerm() + 1; i++)
+                    {
+                        if (subject.Marks.Where(m =>
+                                    m.Term == i && group.People.Select(g => g.Id).ToList().Contains(m.StudentId.Value)).Any())
+                        avgMarks.Add(new AvgMarkTermModel
                         {
-                            if(_context.Marks.Include(m => m.Student).Where(m => m.Term == i && m.Student.GroupId == group.Id).Any())
-                                avgMarkDynamicModels.Add(new AvgMarkDynamicModel
-                                {
-                                    SubjectId = subject.Id,
-                                    AvgMark = subject.getAverageMarkInTerm(i),
-                                    YearTerm = group.Year + " | " + i
-                                });
-                        }
+                            Term = i.ToString() + " сем.",
+                            GroupId = group.Id,
+                            SubjectId = subject.Id,
+                            AvgMark = subject.getAverageMarkByGroup(group.Id, i)
+                        });
+                    }
                 }
             }
-            return avgMarkDynamicModels;
+            return avgMarks;
         }
     }
 }

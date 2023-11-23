@@ -161,20 +161,13 @@ else
                         </EditTemplate>
                     </RadzenDataGridColumn>
 
-                    <RadzenDataGridColumn TItem="Mark" Property="Term" Title="Семестр" Width="100px" FilterValue="@termValueFilter">
+                    <RadzenDataGridColumn TItem="Mark" Property="Term" Title="За семестр" Width="100px" FilterValue="@termValue">
                         <EditTemplate Context="mark">
-                            <RadzenDropDown @bind-Value="@termValue" Style="width: 100%" Data="@terms"/>
+                            <RadzenNumeric @bind-Value="mark.Term" Style="width: 100%" ShowUpDown=false Min="1" Max="@mark.Student.Group.getMaxTerm()"/>
                         </EditTemplate>
 
                         <FilterTemplate>
-                            <div class="d-flex justify-content-center">
-                                <RadzenSelectBar class="bg-white rounded-pill my-auto" @bind-Value=@termValueFilter TValue="int" Size="ButtonSize.Small">
-                                    <Items>
-                                        <RadzenSelectBarItem Icon="done" Text="1" Value="1" />
-                                        <RadzenSelectBarItem Icon="done" Text="2" Value="2"/>
-                                    </Items>
-                                </RadzenSelectBar>
-                            </div>
+                            <RadzenNumeric @bind-Value="termValue" ShowUpDown=false Style="width: 100%" Min="1" Max="17"/>
                         </FilterTemplate>
                     </RadzenDataGridColumn>
 
@@ -207,7 +200,6 @@ else
     IEnumerable<Subject> subjects;
     List<PersonModel> teachers;
     List<PersonModel> students;
-    int[] terms = new int[] { 1, 2 };
     private bool _loading = false;
     private bool isInserting = false;
 
@@ -218,7 +210,6 @@ else
     IEnumerable<string> selectedGroupNames;
 
     int? termValue;
-    int termValueFilter;
 
     LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.And;
     FilterCaseSensitivity filterCaseSensitivity = FilterCaseSensitivity.CaseInsensitive;
@@ -251,7 +242,6 @@ else
         students = await PersonService.GetPersonModelsAsync('S');
         subjects = await SubjectService.GetSubjectsAsync();
         groups = await GroupService.GetGroupsByTypeAsync('S');
-        termValueFilter = (DateTime.Now.Month < 9 && DateTime.Now.Month > 1 ? 2 : 1);
     }
 
     private async Task InsertRow()

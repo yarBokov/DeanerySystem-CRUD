@@ -67,5 +67,8 @@ namespace DeanerySystem.Services
                 return MethodResult.Failure(ex.Message);
             }
         }
+
+        public IEnumerable<int> GenerateTermSeq(int groupId) =>
+            Enumerable.Range(1, _context.Groups.FirstOrDefault(g => g.Id == groupId).getMaxTerm());
     }
 }

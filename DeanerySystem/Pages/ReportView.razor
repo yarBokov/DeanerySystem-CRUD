@@ -1,6 +1,5 @@
 ﻿@page "/reports"
 
-@using DeanerySystem.Extensions
 @inject IGroupService GroupService
 @inject ISubjectService SubjectService
 @inject IPersonService PersonService
@@ -22,67 +21,37 @@ else
             <RadzenCard class="mt-4 w-100 mb-4 d-flex align-items-center" >
                 <RadzenLabel Text="Группа:" Style="margin-right: 8px; vertical-align: middle;" />
                 <RadzenDropDown Data="@_groups" @bind-Value="@groupModelId" 
-                    TextProperty="Name" ValueProperty="Id" AllowFiltering="true"/>
+                    TextProperty="Name" ValueProperty="Id" AllowFiltering="true"
+                    Change="@(args => { _terms = GroupService.GenerateTermSeq(groupModelId);})"/>
             </RadzenCard>
             <hr>
             <hr>
             <div style="display: flex; align-items: center">
                 <div style="white-space:nowrap; margin-right: 16px">Предмет:</div>
-                <RadzenDropDown @bind-Value="@subjectsToDisplay" TextProperty="Name" ValueProperty="Id"
-                    Data="@_subjects" AllowFiltering="true" Multiple="true" AllowClear="true" Chips="true" Placeholder="Выберите предмет" SelectedItemsText="предметов выбрано"/>
+                <RadzenDropDown @bind-Value="@subjectModelId" TextProperty="Name" ValueProperty="Id" Data="@_subjects" AllowFiltering="true" />
 
-                <div style="white-space:nowrap; margin-left: 32px;margin-right: 16px">Семестр:</div>
-                <div class="rz-p-12 rz-text-align-center">
-                    <RadzenCheckBoxList @bind-Value=@termsToDisplay TValue="int" Orientation=Orientation.Vertical class="mb-5">
-                        <Items>
-                            <RadzenCheckBoxListItem Text="1" Value="1" />
-                            <RadzenCheckBoxListItem Text="2" Value="2" />
-                        </Items>
-                    </RadzenCheckBoxList>
-                </div>
+                <div style="white-space:nowrap; margin-left: 32px;margin-right: 16px">Семестры:</div>
+                <RadzenDropDown @bind-Value="@termModel" Data="@_terms" AllowFiltering="true" />
             </div>
         </RadzenStack>
         <div class="row my-5">
-            <div class="col-sm-12 col-lg-4">
+            <div class="col-sm-12 col-lg-7">
+                <RadzenChart ColorScheme="ColorScheme.Palette">
+                    @foreach(var subject in _subjects)
+                    {
+                        var subjectMarks = _markAvgTerms.Where(md => md.SubjectId == subject.Id && md.GroupId == groupModelId).ToList();
+                        <RadzenColumnSeries Data="@subjectMarks" CategoryProperty="Term" ValueProperty="AvgMark" Title="@subject.Name" />
+                    }
+                    <RadzenColumnOptions Margin="0" />
+                    <RadzenValueAxis Formatter="@FormatAvgMark" />
+                </RadzenChart>
+            </div>
+            <div class="col-sm-12 col-lg-5">
                 <RadzenChart ColorScheme="ColorScheme.Divergent">
-                    <RadzenPieSeries Data="_markDistrs.Where(md => md.GroupId == groupModelId && subjectsToDisplay.Contains(md.SubjectId) && termsToDisplay.Contains(md.Term))" 
+                    <RadzenPieSeries Data="@_markDistrs.Where(md => md.GroupId == groupModelId && md.SubjectId == subjectModelId && md.Term == termModel)" 
                         Title="Количество" CategoryProperty="MarkNumber" ValueProperty="MarkCount">
-                        <RadzenSeriesDataLabels Visible="@true" />
+                        <RadzenSeriesDataLabels Visible="true" />
                     </RadzenPieSeries>
-                </RadzenChart>
-            </div>
-            <div class="col-sm-12 col-lg-8">
-                <RadzenChart ColorScheme="ColorScheme.Divergent">
-
-                </RadzenChart>
-            </div>
-        </div>
-        <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H3">Динамика оценок</RadzenText>
-        <RadzenCard class="mt-4 w-100 mb-4 d-flex align-items-center" >
-            <RadzenLabel Text="Предмет:" Style="margin-right: 8px; vertical-align: middle;" />
-            <RadzenDropDown Data="@_subjects" @bind-Value="@subjectDynamicModelId" 
-                TextProperty="Name" ValueProperty="Id" AllowFiltering="true"/>
-        </RadzenCard>
-        <div class="row my-5">
-            <div class="col-sm-12">
-                <RadzenChart>
-                    <RadzenAreaSeries Stroke="rgb(236,72,127)" StrokeWidth="2" Fill="rgba(236,72,127,.5)" 
-                        Data="@_markDynamics.Where(mds => mds.SubjectId == subjectDynamicModelId)" CategoryProperty="YearTerm" ValueProperty="AvgMark">
-                        <ChildContent>
-                            <RadzenMarkers MarkerType="MarkerType.Circle" Fill="#fff" Stroke="rgba(236,72,127)" StrokeWidth="2" Size="8" />
-                        </ChildContent>
-                        <TooltipTemplate Context="data">
-                            Средний балл за <span>@data.YearTerm.Substring(data.YearTerm.Length - 1)</span> семестр @data.YearTerm.Substring(0, 4) : <strong>@String.Format("{0:0.000}", data.AvgMark)</strong>
-                        </TooltipTemplate>
-                    </RadzenAreaSeries>
-                    <RadzenCategoryAxis>
-                        <RadzenGridLines Visible="true" Stroke="#ccc" LineType="LineType.Dashed" />
-                    </RadzenCategoryAxis>
-                    <RadzenValueAxis Formatter="@FormatAvgMark" Max="5.000">
-                        <RadzenGridLines Visible="true" />
-                    </RadzenValueAxis>
-                    <RadzenChartTooltipOptions Style="border: 1px solid rgb(236,72,127); background: #eee; color: #000;" />
-                    <RadzenLegend Visible="false"/>
                 </RadzenChart>
             </div>
         </div>
@@ -96,13 +65,13 @@ else
     int groupModelId = 1;
 
     IEnumerable<Subject> _subjects;
-    IEnumerable<int> subjectsToDisplay = new int[] { 1 };
-    int subjectDynamicModelId = 1;
+    int subjectModelId = 1;
 
-    IEnumerable<int> termsToDisplay = new int[] { (DateTime.Now.Month < 9 && DateTime.Now.Month > 1 ? 2 : 1) };
+    IEnumerable<int> _terms;
+    int termModel = 1;
 
     IEnumerable<MarkDistrModel> _markDistrs;
-    IEnumerable<AvgMarkDynamicModel> _markDynamics;
+    IEnumerable<AvgMarkTermModel> _markAvgTerms;
 
     private async Task LoadDataAsync()
     {
@@ -110,8 +79,9 @@ else
         try
         {
             _groups = await GroupService.GetGroupsByTypeAsync('S');
+            _terms = GroupService.GenerateTermSeq(1);
             _subjects = await SubjectService.GetSubjectsAsync();
-            _markDynamics = MarkService.GetAvgMarkDynamics();
+            _markAvgTerms = MarkService.GetAvgMarkTermModels();
             _markDistrs = MarkService.GetMarkDistrs();
         }
         finally

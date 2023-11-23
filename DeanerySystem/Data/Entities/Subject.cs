@@ -17,8 +17,11 @@ public partial class Subject
     public double getAverageMarkByGroup(int groupId) =>
         getAverageMarkInList(Marks.Where(m => m.Student.GroupId == groupId));
 
-    public double getAverageMarkInTerm(int term) =>
-        getAverageMarkInList(Marks.Where(m => m.Term == term));
+    public double getAverageMarkByGroup(int groupId, int term) =>
+        getAverageMarkInList(Marks.Where(m => m.Student.GroupId == groupId && m.Term == term));
+
+    public double getAverageMarkInTermRange(params int[] terms) =>
+        getAverageMarkInList(Marks.Where(m => Array.IndexOf(terms, m.Term) != -1));
 
     private double getAverageMarkInList(IEnumerable<Mark> marks)
     {
