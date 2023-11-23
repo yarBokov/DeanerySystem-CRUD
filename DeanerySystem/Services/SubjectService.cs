@@ -16,7 +16,7 @@ namespace DeanerySystem.Services
 
         public async Task<IEnumerable<Subject>> GetSubjectsAsync()
         {
-            var result = await _context.Subjects.Include("Marks").ToListAsync();
+            var result = await _context.Subjects.Include(s => s.Marks).Where(s => s.Name != null).ToListAsync();
             return result.OrderBy(result => result.Id);
         }
 

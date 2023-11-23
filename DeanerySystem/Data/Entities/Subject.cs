@@ -17,13 +17,19 @@ public partial class Subject
     public double getAverageMarkByGroup(int groupId) =>
         getAverageMarkInList(Marks.Where(m => m.Student.GroupId == groupId));
 
+    public double getAverageMarkByGroup(int groupId, int term) =>
+        getAverageMarkInList(Marks.Where(m => m.Student.GroupId == groupId && m.Term == term));
+
+    public double getAverageMarkInTermRange(params int[] terms) =>
+        getAverageMarkInList(Marks.Where(m => Array.IndexOf(terms, m.Term) != -1));
+
     private double getAverageMarkInList(IEnumerable<Mark> marks)
     {
-        int? markSum = 0;
+        double markSum = 0.0;
         foreach (var mark in marks)
         {
-            markSum += mark.Value;
+            markSum += mark.Value.Value;
         }
-        return (double)markSum / marks.Count();
+        return markSum / marks.Count();
     }
 }

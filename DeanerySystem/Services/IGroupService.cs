@@ -10,5 +10,6 @@ namespace DeanerySystem.Services
         Task<Group> GetGroupById(int groupId);
         Task<MethodResult> DeleteGroupAsync(int personId);
         Task<IEnumerable<Group>> GetGroupsByTypeAsync(char type);
+        IEnumerable<int> GenerateTermSeq(int groupId);
     }
 }

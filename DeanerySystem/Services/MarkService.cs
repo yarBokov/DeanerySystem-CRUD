@@ -3,6 +3,7 @@ using DeanerySystem.Data.Entities;
 using DeanerySystem.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 
 namespace DeanerySystem.Services
 {
@@ -69,6 +70,59 @@ namespace DeanerySystem.Services
                 markEntry.CurrentValues.SetValues(markEntry.OriginalValues);
                 markEntry.State = EntityState.Unchanged;
             }
+        }
+
+        public List<MarkDistrModel> GetMarkDistrs()
+        {
+            List<MarkDistrModel> markDistrs = new List<MarkDistrModel>();
+            int marksCount = 0;
+            for (int i = 2; i < 6; i++)
+            {
+                foreach (var subject in _context.Subjects.Include(s => s.Marks).Where(s => s.Name != null).ToList())
+                    {
+                    foreach (var group in _context.Groups.Include(g => g.People).Where(g => g.People.FirstOrDefault().Type == 'S').ToList())
+                    {
+                        for (int j = 1; j < group.getMaxTerm() + 1; j++)
+                        {
+                            marksCount = subject.Marks.Where(m =>
+                                    m.Term == j && m.Value == i && group.People.Select(g => g.Id).ToList().Contains(m.StudentId.Value)).Count();
+                            if (marksCount > 0)
+                                markDistrs.Add(new MarkDistrModel
+                                {
+                                    Term = j,
+                                    MarkNumber = i.ToString(),
+                                    GroupId = group.Id,
+                                    SubjectId = subject.Id,
+                                    MarkCount = marksCount,
+                                });
+                        }
+                    }
+                }
+            }
+            return markDistrs;
+        }
+        public List<AvgMarkTermModel> GetAvgMarkTermModels()
+        {
+            List<AvgMarkTermModel> avgMarks = new List<AvgMarkTermModel>();
+            foreach (var subject in _context.Subjects.Include(s => s.Marks).Where(s => s.Name != null).ToList())
+            {
+                foreach(var group in _context.Groups.Include(g => g.People).Where(g => g.People.FirstOrDefault().Type == 'S').ToList())
+                {
+                    for(int i = 1;i < group.getMaxTerm() + 1; i++)
+                    {
+                        if (subject.Marks.Where(m =>
+                                    m.Term == i && group.People.Select(g => g.Id).ToList().Contains(m.StudentId.Value)).Any())
+                        avgMarks.Add(new AvgMarkTermModel
+                        {
+                            Term = i.ToString() + " сем.",
+                            GroupId = group.Id,
+                            SubjectId = subject.Id,
+                            AvgMark = subject.getAverageMarkByGroup(group.Id, i)
+                        });
+                    }
+                }
+            }
+            return avgMarks;
         }
     }
 }
