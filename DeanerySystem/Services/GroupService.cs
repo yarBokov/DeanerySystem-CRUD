@@ -1,4 +1,5 @@
-﻿using DeanerySystem.Data;
+﻿using DeanerySystem.Abstractions;
+using DeanerySystem.Data;
 using DeanerySystem.Data.Entities;
 using DeanerySystem.Models;
 using Microsoft.EntityFrameworkCore;

@@ -1,4 +1,6 @@
-﻿@page "/groups"
+﻿@page "/admin/groups"
+
+@attribute [Authorize]
 
 @inject IGroupService GroupService
 @inject IJSRuntime JsRuntime

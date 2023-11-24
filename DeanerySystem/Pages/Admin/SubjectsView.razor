@@ -1,4 +1,6 @@
-﻿@page "/subjects"
+﻿@page "/admin/subjects"
+
+@attribute [Authorize]
 
 @inject ISubjectService SubjectService
 @inject IJSRuntime JsRuntime

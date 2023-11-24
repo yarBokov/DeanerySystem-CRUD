@@ -1,7 +1,7 @@
 ﻿using DeanerySystem.Data.Entities;
 using DeanerySystem.Models;
 
-namespace DeanerySystem.Services
+namespace DeanerySystem.Abstractions
 {
     public interface ISubjectService
     {

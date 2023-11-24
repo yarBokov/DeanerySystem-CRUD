@@ -1,3 +1,6 @@
+global using Microsoft.AspNetCore.Components.Authorization;
+using DeanerySystem.Abstractions;
+using DeanerySystem.Authentication;
 using DeanerySystem.Data;
 using DeanerySystem.Services;
 using Microsoft.AspNetCore.Components;
@@ -13,15 +16,23 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<IPersonService, PersonService>()
                 .AddScoped<IGroupService, GroupService>()
                 .AddScoped<ISubjectService, SubjectService>()
-                .AddScoped<IMarkService, MarkService>();
+                .AddScoped<IMarkService, MarkService>()
+                .AddScoped<IPasswordHasher, PasswordHasher>();
 
 var connectionString = builder.Configuration.GetConnectionString("DeanerySystem");
 builder.Services.AddDbContext<DeaneryContext>(
     options => options.UseNpgsql(connectionString), 
     ServiceLifetime.Transient);
+
+builder.Services.AddTransient<AccountService>();
+
+builder.Services.AddScoped<AuthenticationService>();
+builder.Services.AddScoped<DeaneryAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(serviceProvider =>
+    serviceProvider.GetRequiredService<DeaneryAuthenticationStateProvider>());
+
 builder.Services.AddRadzenComponents();
 builder.Services.AddScoped<DialogService>();
-builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<TooltipService>();
 var app = builder.Build();
 
