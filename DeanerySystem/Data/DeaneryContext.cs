@@ -18,19 +18,20 @@ public partial class DeaneryContext : DbContext
 
     public virtual DbSet<Group> Groups { get; set; }
 
+    public virtual DbSet<Key> Keys { get; set; }
+
     public virtual DbSet<Mark> Marks { get; set; }
 
     public virtual DbSet<Person> People { get; set; }
 
     public virtual DbSet<Subject> Subjects { get; set; }
 
+    public virtual DbSet<User> Users { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
-        //optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=Deanery;Username=postgres;Password=Uo987kt");
     }
-
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Group>(entity =>
@@ -46,6 +47,17 @@ public partial class DeaneryContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("name");
             entity.Property(e => e.Year).HasColumnName("year");
+        });
+
+        modelBuilder.Entity<Key>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("keys");
+
+            entity.Property(e => e.Key1)
+                .HasMaxLength(15)
+                .HasColumnName("key");
         });
 
         modelBuilder.Entity<Mark>(entity =>
@@ -116,6 +128,25 @@ public partial class DeaneryContext : DbContext
             entity.Property(e => e.Name)
                 .HasMaxLength(50)
                 .HasColumnName("name");
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("users_pkey");
+
+            entity.ToTable("users");
+
+            entity.Property(e => e.Id)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("id");
+            entity.Property(e => e.HashedPassword)
+                .HasMaxLength(256)
+                .HasColumnName("hashedPassword");
+            entity.Property(e => e.PersonId).HasColumnName("person_Id");
+
+            entity.HasOne(d => d.Person).WithMany(p => p.Users)
+                .HasForeignKey(d => d.PersonId)
+                .HasConstraintName("fk_users_people");
         });
 
         OnModelCreatingPartial(modelBuilder);

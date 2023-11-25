@@ -1,6 +1,6 @@
 ﻿@page "/admin/groups"
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 
 @inject IGroupService GroupService
 @inject IJSRuntime JsRuntime

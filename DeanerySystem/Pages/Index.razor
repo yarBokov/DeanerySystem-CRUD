@@ -2,6 +2,16 @@
 
 <PageTitle>О сайте</PageTitle>
 
+<AuthorizeView>
+    <Authorized>
+        <h1>Добро пожаловать, @context.User.Identity.Name!</h1>
+    </Authorized>
+    <NotAuthorized>
+        <h1>Привет, гость!</h1>
+    </NotAuthorized>
+</AuthorizeView>
+<br />
+<br />
 <div class="container my-5">
     <h3>О проекте</h3>
     <p>Простенький сайт, курсовая работа по дисциплине "Базы данных", написанный на Blazor Web Server с .NET 7 Ярославом Боковым!</p>

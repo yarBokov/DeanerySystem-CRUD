@@ -1,5 +1,7 @@
 ﻿@page "/reports"
 
+@attribute [Authorize(Roles = "Admin")]
+
 @inject IGroupService GroupService
 @inject ISubjectService SubjectService
 @inject IPersonService PersonService

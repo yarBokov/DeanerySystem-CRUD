@@ -4,6 +4,7 @@ using DeanerySystem.Authentication;
 using DeanerySystem.Data;
 using DeanerySystem.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
@@ -24,12 +25,10 @@ builder.Services.AddDbContext<DeaneryContext>(
     options => options.UseNpgsql(connectionString), 
     ServiceLifetime.Transient);
 
-builder.Services.AddTransient<AccountService>();
-
-builder.Services.AddScoped<AuthenticationService>();
-builder.Services.AddScoped<DeaneryAuthenticationStateProvider>();
-builder.Services.AddScoped<AuthenticationStateProvider>(serviceProvider =>
-    serviceProvider.GetRequiredService<DeaneryAuthenticationStateProvider>());
+builder.Services.AddSingleton<AccountService>();
+builder.Services.AddAuthenticationCore();
+builder.Services.AddScoped<ProtectedSessionStorage>();
+builder.Services.AddScoped<AuthenticationStateProvider, DeaneryAuthenticationStateProvider>();
 
 builder.Services.AddRadzenComponents();
 builder.Services.AddScoped<DialogService>();

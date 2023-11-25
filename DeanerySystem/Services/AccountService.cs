@@ -1,5 +1,7 @@
 ﻿using DeanerySystem.Data;
+using DeanerySystem.Data.Entities;
 using DeanerySystem.Models.Authentication;
+using Microsoft.EntityFrameworkCore;
 
 namespace DeanerySystem.Services
 {
@@ -12,19 +14,9 @@ namespace DeanerySystem.Services
             _context = context;
         }
 
-        public async Task<LoggedInAdmin?> LoginAsync(LoginModel model)
+        public async Task<User?> GetUserById(int id)
         {
-            var dbUser = await _context.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Email == model.Username);
-            if (dbUser is not null)
-            {
-                return new LoggedInAdmin(dbUser.Id, $"{dbUser.FirstName} {dbUser.LastName}".Trim());
-            }
-            else
-            {
-                return null;
-            }
+            return await _context.Users.Include(u => u.Person).FirstOrDefaultAsync(u => u.Id == id);
         }
     }
 }

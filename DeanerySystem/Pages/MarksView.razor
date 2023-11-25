@@ -1,5 +1,7 @@
 ﻿@page "/marks"
 
+@attribute [Authorize(Roles = "Admin,User")]
+
 @inject IJSRuntime JsRuntime
 @inject IMarkService MarkService
 @inject IPersonService PersonService

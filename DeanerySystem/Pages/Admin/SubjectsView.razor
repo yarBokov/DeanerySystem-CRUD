@@ -1,6 +1,6 @@
 ﻿@page "/admin/subjects"
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 
 @inject ISubjectService SubjectService
 @inject IJSRuntime JsRuntime
