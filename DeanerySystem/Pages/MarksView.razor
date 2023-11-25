@@ -43,14 +43,16 @@ else
         <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H3">Оценки</RadzenText>
         <hr>
         <div class="container-fluid flex-xl-grow-1">
-            <div class="button-container">
-                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle_outline" 
-                    class="mt-2 mb-4 rz-border-radius-4 left-button" Text="Добавить новую запись" 
-                    Click="@InsertRow" Disabled=@(markToInsert != null || markToUpdate != null) />
+            <AuthorizeView Roles="Admin">
+                <div class="button-container">
+                    <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle_outline" 
+                        class="mt-2 mb-4 rz-border-radius-4 left-button" Text="Добавить новую запись" 
+                        Click="@InsertRow" Disabled=@(markToInsert != null || markToUpdate != null) />
 
-                <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="assessment" class="mt-2 mb-4 rz-border-radius-4" 
-                    Text="К отчету" Click="@(args => NavigationManager.NavigateTo("/reports"))"/>
-            </div>
+                    <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="assessment" class="mt-2 mb-4 rz-border-radius-4" 
+                        Text="К отчету" Click="@(args => NavigationManager.NavigateTo("/admin/reports"))"/>
+                </div>
+            </AuthorizeView>
             <RadzenDataGrid @ref="marksGrid" AllowAlternatingRows="false" AllowFiltering="true" AllowColumnResize="true" Density="@density" 
                 AllowPaging="true" PageSize="6" EditMode="Radzen.DataGridEditMode.Single"
                 Data="@_marks" TItem="Mark" RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow" FilterMode="FilterMode.Simple"
@@ -172,29 +174,33 @@ else
                             <RadzenNumeric @bind-Value="termValue" ShowUpDown=false Style="width: 100%" Min="1" Max="17"/>
                         </FilterTemplate>
                     </RadzenDataGridColumn>
-
-                    <RadzenDataGridColumn TItem="Mark" Context="mark" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
-                        <Template Context="mark">
-                            <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Large" Click="@(args => EditRow(mark))" @onclick:stopPropagation="true">
-                            </RadzenButton>
-                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Large" class="my-1 ms-1" Click="@(args => DeleteRow(mark))"  @onclick:stopPropagation="true">
-                            </RadzenButton>
-                        </Template>
-                        <EditTemplate Context="mark">
-                            <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(mark))">
-                            </RadzenButton>
-                            <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@((args) => CancelEdit(mark))">
-                            </RadzenButton>
-                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@(args => DeleteRow(mark))">
-                            </RadzenButton>
-                        </EditTemplate>
-                    </RadzenDataGridColumn>
+                    <AuthorizeView Roles="Admin">
+                        <RadzenDataGridColumn TItem="Mark" Context="mark" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                            <Template Context="mark">
+                                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Large" Click="@(args => EditRow(mark))" @onclick:stopPropagation="true">
+                                </RadzenButton>
+                                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Large" class="my-1 ms-1" Click="@(args => DeleteRow(mark))"  @onclick:stopPropagation="true">
+                                </RadzenButton>
+                            </Template>
+                            <EditTemplate Context="mark">
+                                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(mark))">
+                                </RadzenButton>
+                                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@((args) => CancelEdit(mark))">
+                                </RadzenButton>
+                                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@(args => DeleteRow(mark))">
+                                </RadzenButton>
+                            </EditTemplate>
+                        </RadzenDataGridColumn>
+                    </AuthorizeView>
                 </Columns>
 
             </RadzenDataGrid>
         </div>
 }
 @code {
+    [CascadingParameter]
+
+
     RadzenDataGrid<Mark> marksGrid;
     Density density = Density.Default;
     IEnumerable<Mark> _marks;
