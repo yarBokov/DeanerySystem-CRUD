@@ -71,6 +71,8 @@
     private bool _isProcessing = false;
     private string? _errorMsg = null;
 
+    private Key? accessKey = null;
+
     private async Task RegisterAsync()
     {
         _errorMsg = null;
@@ -83,12 +85,12 @@
                 _errorMsg = "Пользователь с таким ID уже существует!";
                 _isProcessing = false;
             }
-            else
+            else if(_isProcessing)
             {
                 if (_isAdmin)
                 {
-                    var keyChecked = await AccountService.CheckKeyAsync(_model.AccessKey!);
-                    if (keyChecked)
+                    accessKey = await AccountService.GetKeyAsync(_model.AccessKey!);
+                    if (accessKey == null)
                     {
                         _errorMsg = "Неверный ключ доступа! Попробуйте снова";
                         _isProcessing = false;
@@ -100,20 +102,25 @@
                         {
                             PersonId = _model.PersonId,
                             HashedPassword = PasswordHasher.Hash(_model.Password),
+                            KeyId = (accessKey == null ? null : accessKey.Id)
                         });
-                    if (result.Status)
+                    if (!result.Status)
+                    {
+                        throw new Exception("Ошибка при сохранении пользователя: " + result.Error);
+                    }
+                    else
                     {
                         _model = new();
                         await Task.Delay(1000);
+                        userAccount = await AccountService.GetUserByPersonId(_model.PersonId);
+                        var deaneryAuthStateProvider = (DeaneryAuthenticationStateProvider)AuthStateProvider;
+                        await deaneryAuthStateProvider.UpdateAuthenticationState(new UserSession
+                            {
+                                UserName = userAccount.Person.getFullName(),
+                                Role = userAccount.Person.getUserRole()
+                            });
+                        NavigationManager.NavigateTo("/", true);
                     }
-                    userAccount = await AccountService.GetUserByPersonId(_model.PersonId);
-                    var deaneryAuthStateProvider = (DeaneryAuthenticationStateProvider)AuthStateProvider;
-                    await deaneryAuthStateProvider.UpdateAuthenticationState(new UserSession
-                        {
-                            UserName = userAccount.Person.getFullName(),
-                            Role = userAccount.Person.getUserRole()
-                        });
-                    NavigationManager.NavigateTo("/", true);
                 }
             }
         }

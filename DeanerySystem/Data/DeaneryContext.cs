@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using DeanerySystem.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace DeanerySystem.Data;
@@ -29,9 +28,9 @@ public partial class DeaneryContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        base.OnConfiguring(optionsBuilder);
-    }
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=Deanery;Username=postgres;Password=Uo987kt");
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Group>(entity =>
@@ -51,13 +50,16 @@ public partial class DeaneryContext : DbContext
 
         modelBuilder.Entity<Key>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("keys");
+            entity.HasKey(e => e.Id).HasName("keys_pkey");
 
-            entity.Property(e => e.Key1)
+            entity.ToTable("keys");
+
+            entity.Property(e => e.Id)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("id");
+            entity.Property(e => e.AccessKey)
                 .HasMaxLength(15)
-                .HasColumnName("key");
+                .HasColumnName("accessKey");
         });
 
         modelBuilder.Entity<Mark>(entity =>
@@ -142,7 +144,12 @@ public partial class DeaneryContext : DbContext
             entity.Property(e => e.HashedPassword)
                 .HasMaxLength(256)
                 .HasColumnName("hashedPassword");
+            entity.Property(e => e.KeyId).HasColumnName("key_Id");
             entity.Property(e => e.PersonId).HasColumnName("person_Id");
+
+            entity.HasOne(d => d.Key).WithMany(p => p.Users)
+                .HasForeignKey(d => d.KeyId)
+                .HasConstraintName("fk_users_keys");
 
             entity.HasOne(d => d.Person).WithMany(p => p.Users)
                 .HasForeignKey(d => d.PersonId)

@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DeanerySystem.Data.Entities;
+namespace DeanerySystem;
 
 public partial class Key
 {
-    public string? Key1 { get; set; }
+    public int Id { get; set; }
 
-	public Key(string key)
-	{
-		Key1 = key;
-	}
+    public string? AccessKey { get; set; }
+
+    public virtual ICollection<User> Users { get; set; } = new List<User>();
 }

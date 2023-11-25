@@ -35,7 +35,7 @@ namespace DeanerySystem.Services
             }
         }
 
-        public async Task<bool> CheckKeyAsync(string accessKey) =>
-          await _context.Keys.ContainsAsync(new Key(accessKey));
+        public async Task<Key?> GetKeyAsync(string accessKey) =>
+          await _context.Keys.FirstOrDefaultAsync(k => k.AccessKey == accessKey);
     }
 }
