@@ -3,16 +3,16 @@
 
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
-@inject AccountService AccountService
+@inject IAccountService AccountService
 @inject IPasswordHasher PasswordHasher
 
 @if (_isProcessing)
 {
     <div class="overlay position-fixed"></div>
     <div class="loading-wrapper d-flex justify-content-center align-items-center">
-        <RadzenProgressBarCircular ShowValue="true" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large">
+        <RadzenProgressBarCircular ShowValue="true" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Medium">
             <Template>
-                    Вход в систему...
+                Вход в систему...
             </Template>
         </RadzenProgressBarCircular>
     </div>
@@ -28,14 +28,12 @@
             <div class="card-body">
                 <div class="mb-3">
                     <label class="form-label">Введите ID пользователя</label>
-                    <RadzenNumeric ShowUpDown="false" @bind-Value="_model.Id" class="form-control" TValue="int" Placeholder="Введите ваш ID" AutoComplete="false"/>
-                    @*<InputNumber @bind-Value="_model.Id" class="form-control" placeholder="Введите ваш ID"/>*@
-                    <ValidationMessage For="() => _model.Id" />
+                    <RadzenNumeric ShowUpDown="false" @bind-Value="_model.PersonId" class="form-control" TValue="int?" Placeholder="Введите ваш ID" AutoComplete="false"/>
+                    <ValidationMessage For="() => _model.PersonId" />
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Пароль</label>
                     <RadzenPassword @bind-Value="_model.Password" class="form-control" Placeholder="Введите пароль" AutoComplete="false" />
-                    @*<InputText type="password" @bind-Value="_model.Password" class="form-control" placeholder="Введите пароль" />*@
                     <ValidationMessage For="() => _model.Password" />
                 </div>
 
@@ -68,7 +66,7 @@
         _isProcessing = true;
         try
         {
-            var userAccount = await AccountService.GetUserById(_model.Id);
+            var userAccount = await AccountService.GetUserByPersonId(_model.PersonId.Value);
             if (userAccount == null)
             {
                 _errorMsg = "Пользователя с таким ID не существует. Зарегистрируйтесь!";

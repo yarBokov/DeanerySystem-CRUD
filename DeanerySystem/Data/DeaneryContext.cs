@@ -15,25 +15,26 @@ public partial class DeaneryContext : DbContext
     {
     }
 
-    public virtual DbSet<Group> Groups { get; set; }
+    public virtual DbSet<Data.Entities.Group> Groups { get; set; }
 
     public virtual DbSet<Key> Keys { get; set; }
 
-    public virtual DbSet<Mark> Marks { get; set; }
+    public virtual DbSet<Data.Entities.Mark> Marks { get; set; }
 
     public virtual DbSet<Person> People { get; set; }
 
-    public virtual DbSet<Subject> Subjects { get; set; }
+    public virtual DbSet<Data.Entities.Subject> Subjects { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=Deanery;Username=postgres;Password=Uo987kt");
+    {
+        base.OnConfiguring(optionsBuilder);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Group>(entity =>
+        modelBuilder.Entity<Data.Entities.Group>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("groups_pkey");
 
@@ -62,7 +63,7 @@ public partial class DeaneryContext : DbContext
                 .HasColumnName("accessKey");
         });
 
-        modelBuilder.Entity<Mark>(entity =>
+        modelBuilder.Entity<Data.Entities.Mark>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("marks_pkey");
 
@@ -118,7 +119,7 @@ public partial class DeaneryContext : DbContext
                 .HasConstraintName("fk_people_groups");
         });
 
-        modelBuilder.Entity<Subject>(entity =>
+        modelBuilder.Entity<Data.Entities.Subject>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("subjects_pkey");
 

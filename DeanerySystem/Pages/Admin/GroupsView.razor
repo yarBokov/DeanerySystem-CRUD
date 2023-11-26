@@ -56,12 +56,12 @@
                         <td>
                             <RadzenButton Variant="Variant.Flat" Click="@(args => EditGroupAsync(group))"
                                 Text="Редактировать" ButtonStyle="ButtonStyle.Primary" Shade="Shade.Lighter" 
-                                MouseEnter="@(args => ShowTooltip(args, group.People.Any(), new TooltipOptions(){ Position = TooltipPosition.Left, Delay=1500 }))"/>
+                                MouseEnter="@(args => ShowTooltip(args, group.People.Any(), new TooltipOptions(){ Position = TooltipPosition.Left, Delay=1000, Duration = 5000}))"/>
                         </td>
                         <td>
                             <RadzenButton Variant="Variant.Flat" Click="@(args => DeleteGroupAsync(group))" Disabled="group.People.Any()"
                                 Text="Удалить группу" ButtonStyle="ButtonStyle.Danger"
-                                MouseEnter="@(args => ShowTooltip(args, group.People.Any(), new TooltipOptions(){ Position = TooltipPosition.Right, Delay=1500 }))"/>
+                                MouseEnter="@(args => ShowTooltip(args, group.People.Any(), new TooltipOptions(){ Position = TooltipPosition.Bottom, Delay=1000, Duration = 5000 }))"/>
                         </td>
                     </tr>
                 }

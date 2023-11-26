@@ -12,23 +12,27 @@ using Radzen;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddAuthenticationCore();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+
+builder.Services.AddScoped<ProtectedSessionStorage>();
+builder.Services.AddScoped<DeaneryAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(serviceProvider =>
+    serviceProvider.GetRequiredService<DeaneryAuthenticationStateProvider>());
+
 builder.Services.AddScoped<IPersonService, PersonService>()
                 .AddScoped<IGroupService, GroupService>()
                 .AddScoped<ISubjectService, SubjectService>()
                 .AddScoped<IMarkService, MarkService>()
-                .AddScoped<IPasswordHasher, PasswordHasher>();
+                .AddScoped<IPasswordHasher, PasswordHasher>()
+                .AddScoped<IAccountService, AccountService>();
+
 
 var connectionString = builder.Configuration.GetConnectionString("DeanerySystem");
 builder.Services.AddDbContext<DeaneryContext>(
-    options => options.UseNpgsql(connectionString), 
+    options => options.UseNpgsql(connectionString),
     ServiceLifetime.Transient);
-
-builder.Services.AddSingleton<AccountService>();
-builder.Services.AddAuthenticationCore();
-builder.Services.AddScoped<ProtectedSessionStorage>();
-builder.Services.AddScoped<AuthenticationStateProvider, DeaneryAuthenticationStateProvider>();
 
 builder.Services.AddRadzenComponents();
 builder.Services.AddScoped<DialogService>();

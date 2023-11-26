@@ -6,10 +6,10 @@ namespace DeanerySystem.Authentication
 {
     public class DeaneryAuthenticationStateProvider : AuthenticationStateProvider
     {
-        private readonly ProtectedBrowserStorage _sessionStorage;
+        private readonly ProtectedSessionStorage _sessionStorage;
         private ClaimsPrincipal _anonymous = new ClaimsPrincipal(new ClaimsIdentity());
 
-        public DeaneryAuthenticationStateProvider(ProtectedBrowserStorage sessionStorage)
+        public DeaneryAuthenticationStateProvider(ProtectedSessionStorage sessionStorage)
         {
             _sessionStorage = sessionStorage;
         }

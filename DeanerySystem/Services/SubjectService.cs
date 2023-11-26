@@ -31,6 +31,11 @@ namespace DeanerySystem.Services
                 }
                 else
                 {
+                    var foundObj = await _context.Groups.FirstOrDefaultAsync(s => s.Name == subject.Name);
+                    if (foundObj != null)
+                    {
+                        return MethodResult.Failure("Предмет с таким названием уже существует!");
+                    }
                     await _context.AddAsync(subject);
                 }
                 await _context.SaveChangesAsync();
