@@ -1,4 +1,5 @@
-﻿using DeanerySystem.Data;
+﻿using DeanerySystem.Abstractions;
+using DeanerySystem.Data;
 using DeanerySystem.Data.Entities;
 using DeanerySystem.Models;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,11 @@ namespace DeanerySystem.Services
                 }
                 else
                 {
+                    var foundObj = await _context.Groups.FirstOrDefaultAsync(g => g.Name == group.Name && g.Year == group.Year);
+                    if (foundObj != null)
+                    {
+                        return MethodResult.Failure("Группа с таким годом и таким названием уже существует!");
+                    }
                     await _context.AddAsync(group);
                 }
                 await _context.SaveChangesAsync();
@@ -38,7 +44,7 @@ namespace DeanerySystem.Services
 
         public async Task<IEnumerable<Group>> GetGroupsAsync()
         {
-            var result =  await _context.Groups.Include(g => g.People).Where(g => g.Name != null).ToListAsync();
+            var result =  await _context.Groups.Include(g => g.People).Where(g => g.Name != null && g.Id != 8888 && g.Id != 9999).ToListAsync();
             return result.OrderBy(group => group.Id);
         }
 

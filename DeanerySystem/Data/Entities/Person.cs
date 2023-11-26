@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using DeanerySystem.Data.Entities;
 
-namespace DeanerySystem.Data.Entities;
+namespace DeanerySystem;
 
 public partial class Person
 {
@@ -19,12 +20,21 @@ public partial class Person
 
     public virtual Group? Group { get; set; }
 
-    public virtual ICollection<Mark> MarkStudents { get; set; } = new List<Mark>();//оценки, полученные студентом; если препод - пустая коллекция
+    public virtual ICollection<Mark> MarkStudents { get; set; } = new List<Mark>();
 
-    public virtual ICollection<Mark> MarkTeachers { get; set; } = new List<Mark>(); //оценки, выставленные преподавателем; если студент - пустая коллекция
+    public virtual ICollection<Mark> MarkTeachers { get; set; } = new List<Mark>();
+
+    public virtual ICollection<User> Users { get; set; } = new List<User>();
 
     public string getFullName()
     {
         return $"{SecondName} {FirstName} {PatherName}";
+    }
+
+    public string getUserRole()
+    {
+        if (Type != 'W')
+            return "User";
+        return "Admin";
     }
 }

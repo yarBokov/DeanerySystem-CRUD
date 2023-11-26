@@ -1,4 +1,6 @@
-﻿@page "/students"
+﻿@page "/admin/students"
+
+@attribute [Authorize(Roles = "Admin")]
 
 @inject IJSRuntime JsRuntime
 @inject IPersonService PersonService
@@ -122,17 +124,11 @@ else
                         </Template>
                     </RadzenDataGridColumn>
 
-                    <RadzenDataGridColumn TItem="Person" Property="Group.Name" Title="Группа" Width="200px"
-                        FilterOperator="FilterOperator.Contains" LogicalFilterOperator="LogicalFilterOperator.Or" FilterValue="@selectedGroupNames">
+                    <RadzenDataGridColumn TItem="Person" Property="Group.Name" Title="Группа" Width="200px" Sortable="false">
                         <EditTemplate Context="person">
-                            <RadzenDropDown @bind-Value="person.GroupId" Data="@_groups" AllowFiltering="true" AllowClear="true"
-                            TextProperty="Name" ValueProperty="Id" Style="width: 100%; display: block"/>
+                            <RadzenDropDown @bind-Value="@person.GroupId" Data="@_groups" AllowFiltering="true" AllowClear="true"
+                                TextProperty="Name" ValueProperty="Id" Style="width: 100%; display: block"/>
                         </EditTemplate>
-
-                        <FilterTemplate>
-                            <RadzenDropDown @bind-Value=@selectedGroupNames Change="@OnSelectedGroupNamesChange" AllowFiltering="true"
-                                Data="@_groups.Select(g => g.Name).ToList()" Multiple="true" AllowClear="true"/>
-                        </FilterTemplate>
 
                     </RadzenDataGridColumn>
 
@@ -175,7 +171,6 @@ else
     Person? personToInsert;
 
     int? yearValue;
-    IEnumerable<string> selectedGroupNames;
 
     LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.And;
     FilterCaseSensitivity filterCaseSensitivity = FilterCaseSensitivity.CaseInsensitive;
@@ -287,11 +282,5 @@ else
             filterCaseSensitivity = FilterCaseSensitivity.Default;
         else
             filterCaseSensitivity = FilterCaseSensitivity.CaseInsensitive;
-    }
-
-    private void OnSelectedGroupNamesChange(object value)
-    {
-        if (selectedGroupNames != null && !selectedGroupNames.Any())
-            selectedGroupNames = null;
     }
 }

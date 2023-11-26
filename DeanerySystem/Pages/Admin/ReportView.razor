@@ -1,4 +1,6 @@
-﻿@page "/reports"
+﻿@page "/admin/reports"
+
+@attribute [Authorize(Roles = "Admin")]
 
 @inject IGroupService GroupService
 @inject ISubjectService SubjectService

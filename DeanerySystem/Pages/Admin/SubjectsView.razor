@@ -1,4 +1,6 @@
-﻿@page "/subjects"
+﻿@page "/admin/subjects"
+
+@attribute [Authorize(Roles = "Admin")]
 
 @inject ISubjectService SubjectService
 @inject IJSRuntime JsRuntime
@@ -52,12 +54,12 @@
                         <td>
                             <RadzenButton Variant="Variant.Flat" Click="@(args => EditSubjectAsync(subject))"
                                 Text="Редактировать" ButtonStyle="ButtonStyle.Primary" Shade="Shade.Lighter"
-                                MouseEnter="@(args => ShowTooltip(args, subject.Marks.Any(), new TooltipOptions(){ Position = TooltipPosition.Left, Delay=1500 }))"/>
+                                MouseEnter="@(args => ShowTooltip(args, subject.Marks.Any(), new TooltipOptions(){ Position = TooltipPosition.Left, Delay=1000, Duration=5000 }))"/>
                         </td>
                         <td>
                             <RadzenButton Variant="Variant.Flat" Click="@(args => DeleteSubjectAsync(subject))" Disabled="subject.Marks.Any()"
                                 Text="Удалить предмет" ButtonStyle="ButtonStyle.Danger"
-                                MouseEnter="@(args => ShowTooltip(args, subject.Marks.Any(), new TooltipOptions(){ Position = TooltipPosition.Right, Delay=1500 }))"/>
+                                MouseEnter="@(args => ShowTooltip(args, subject.Marks.Any(), new TooltipOptions(){ Position = TooltipPosition.Bottom, Delay=1000, Duration=5000 }))"/>
                         </td>
                     </tr>
                 }

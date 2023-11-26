@@ -1,5 +1,7 @@
 ﻿@page "/marks"
 
+@attribute [Authorize(Roles = "Admin,User")]
+
 @inject IJSRuntime JsRuntime
 @inject IMarkService MarkService
 @inject IPersonService PersonService
@@ -25,7 +27,7 @@ else
             <span style="color: var(--rz-text-contrast-color)">@(countOfUnHostedMarks) @(countOfUnHostedMarks > 1 ? "оценки" : "оценка") без определённого преподавателя!</span>
         </div>
     }
-            <style>
+    <style>
             .rz-grid-table {
                 width: unset;
             }
@@ -41,14 +43,16 @@ else
         <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H3">Оценки</RadzenText>
         <hr>
         <div class="container-fluid flex-xl-grow-1">
-            <div class="button-container">
-                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle_outline" 
-                    class="mt-2 mb-4 rz-border-radius-4 left-button" Text="Добавить новую запись" 
-                    Click="@InsertRow" Disabled=@(markToInsert != null || markToUpdate != null) />
+            <AuthorizeView Roles="Admin">
+                <div class="button-container">
+                    <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle_outline" 
+                        class="mt-2 mb-4 rz-border-radius-4 left-button" Text="Добавить новую запись" 
+                        Click="@InsertRow" Disabled=@(markToInsert != null || markToUpdate != null) />
 
-                <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="assessment" class="mt-2 mb-4 rz-border-radius-4" 
-                    Text="К отчету" Click="@(args => NavigationManager.NavigateTo("/reports"))"/>
-            </div>
+                    <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="assessment" class="mt-2 mb-4 rz-border-radius-4" 
+                        Text="К отчету" Click="@(args => NavigationManager.NavigateTo("/admin/reports"))"/>
+                </div>
+            </AuthorizeView>
             <RadzenDataGrid @ref="marksGrid" AllowAlternatingRows="false" AllowFiltering="true" AllowColumnResize="true" Density="@density" 
                 AllowPaging="true" PageSize="6" EditMode="Radzen.DataGridEditMode.Single"
                 Data="@_marks" TItem="Mark" RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow" FilterMode="FilterMode.Simple"
@@ -105,15 +109,22 @@ else
                             {
                                 <span style='color: var(--rz-text-color)'>@mark.Student.getFullName()</span>
                             }
-                    </EditTemplate>
+                        </EditTemplate>
                     </RadzenDataGridColumn>
 
-                    <RadzenDataGridColumn TItem="Mark" Property="Student.Group.Name" Title="Группа" Width="100px"
-                        FilterOperator="FilterOperator.Contains" LogicalFilterOperator="LogicalFilterOperator.Or" FilterValue="@selectedGroupNames">
+                    <RadzenDataGridColumn TItem="Mark" Property="Student.Group.Name" Title="Группа" Width="100px">
+                        <EditTemplate>
+                            <RadzenProgressBar ProgressBarStyle="ProgressBarStyle.Info" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="Mark" Property="Student.Group.Year" Title="Год поступления" Width="150px" FilterValue="@yearValue">
+                        <EditTemplate>
+                            <RadzenProgressBar ProgressBarStyle="ProgressBarStyle.Info" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+                        </EditTemplate>
 
                         <FilterTemplate>
-                            <RadzenDropDown @bind-Value=@selectedGroupNames Change="@OnSelectedGroupNamesChange" AllowFiltering="true"
-                                Data="@groups.Select(g => g.Name).ToList()" Multiple="true" AllowClear="true"/>
+                            <RadzenNumeric @bind-Value=yearValue ShowUpDown=false />
                         </FilterTemplate>
                     </RadzenDataGridColumn>
 
@@ -143,7 +154,7 @@ else
 
                     <RadzenDataGridColumn TItem="Mark" Property="Value" Title="Оценка" Width="80px" FilterValue="@markValue">
                         <EditTemplate Context="mark">
-                            <RadzenNumeric @bind-Value="mark.Value" Style="width: 100%"/>
+                            <RadzenDropDown @bind-Value="mark.Value" Data="@Enumerable.Range(2, 5)" AllowFiltering="true" AllowClear="true" Style="width: 100%" />
                         </EditTemplate>
 
                         <FilterTemplate>
@@ -170,23 +181,24 @@ else
                             <RadzenNumeric @bind-Value="termValue" ShowUpDown=false Style="width: 100%" Min="1" Max="17"/>
                         </FilterTemplate>
                     </RadzenDataGridColumn>
-
-                    <RadzenDataGridColumn TItem="Mark" Context="mark" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
-                        <Template Context="mark">
-                            <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Large" Click="@(args => EditRow(mark))" @onclick:stopPropagation="true">
-                            </RadzenButton>
-                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Large" class="my-1 ms-1" Click="@(args => DeleteRow(mark))"  @onclick:stopPropagation="true">
-                            </RadzenButton>
-                        </Template>
-                        <EditTemplate Context="mark">
-                            <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(mark))">
-                            </RadzenButton>
-                            <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@((args) => CancelEdit(mark))">
-                            </RadzenButton>
-                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@(args => DeleteRow(mark))">
-                            </RadzenButton>
-                        </EditTemplate>
-                    </RadzenDataGridColumn>
+                    <AuthorizeView Roles="Admin">
+                        <RadzenDataGridColumn TItem="Mark" Context="mark" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                            <Template Context="mark">
+                                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Large" Click="@(args => EditRow(mark))" @onclick:stopPropagation="true">
+                                </RadzenButton>
+                                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Large" class="my-1 ms-1" Click="@(args => DeleteRow(mark))"  @onclick:stopPropagation="true">
+                                </RadzenButton>
+                            </Template>
+                            <EditTemplate Context="mark">
+                                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(mark))">
+                                </RadzenButton>
+                                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@((args) => CancelEdit(mark))">
+                                </RadzenButton>
+                                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@(args => DeleteRow(mark))">
+                                </RadzenButton>
+                            </EditTemplate>
+                        </RadzenDataGridColumn>
+                    </AuthorizeView>
                 </Columns>
 
             </RadzenDataGrid>
@@ -207,9 +219,8 @@ else
     Mark? markToInsert;
 
     int? markValue;
-    IEnumerable<string> selectedGroupNames;
-
     int? termValue;
+    int? yearValue;
 
     LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.And;
     FilterCaseSensitivity filterCaseSensitivity = FilterCaseSensitivity.CaseInsensitive;
@@ -325,11 +336,5 @@ else
             filterCaseSensitivity = FilterCaseSensitivity.Default;
         else
             filterCaseSensitivity = FilterCaseSensitivity.CaseInsensitive;
-    }
-
-    private void OnSelectedGroupNamesChange(object value)
-    {
-        if (selectedGroupNames != null && !selectedGroupNames.Any())
-            selectedGroupNames = null;
     }
 }

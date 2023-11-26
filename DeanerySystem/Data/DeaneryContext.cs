@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using DeanerySystem.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace DeanerySystem.Data;
@@ -16,24 +15,26 @@ public partial class DeaneryContext : DbContext
     {
     }
 
-    public virtual DbSet<Group> Groups { get; set; }
+    public virtual DbSet<Data.Entities.Group> Groups { get; set; }
 
-    public virtual DbSet<Mark> Marks { get; set; }
+    public virtual DbSet<Key> Keys { get; set; }
+
+    public virtual DbSet<Data.Entities.Mark> Marks { get; set; }
 
     public virtual DbSet<Person> People { get; set; }
 
-    public virtual DbSet<Subject> Subjects { get; set; }
+    public virtual DbSet<Data.Entities.Subject> Subjects { get; set; }
+
+    public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
-        //optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=Deanery;Username=postgres;Password=Uo987kt");
     }
-
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Group>(entity =>
+        modelBuilder.Entity<Data.Entities.Group>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("groups_pkey");
 
@@ -48,7 +49,21 @@ public partial class DeaneryContext : DbContext
             entity.Property(e => e.Year).HasColumnName("year");
         });
 
-        modelBuilder.Entity<Mark>(entity =>
+        modelBuilder.Entity<Key>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("keys_pkey");
+
+            entity.ToTable("keys");
+
+            entity.Property(e => e.Id)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("id");
+            entity.Property(e => e.AccessKey)
+                .HasMaxLength(15)
+                .HasColumnName("accessKey");
+        });
+
+        modelBuilder.Entity<Data.Entities.Mark>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("marks_pkey");
 
@@ -104,7 +119,7 @@ public partial class DeaneryContext : DbContext
                 .HasConstraintName("fk_people_groups");
         });
 
-        modelBuilder.Entity<Subject>(entity =>
+        modelBuilder.Entity<Data.Entities.Subject>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("subjects_pkey");
 
@@ -116,6 +131,30 @@ public partial class DeaneryContext : DbContext
             entity.Property(e => e.Name)
                 .HasMaxLength(50)
                 .HasColumnName("name");
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("users_pkey");
+
+            entity.ToTable("users");
+
+            entity.Property(e => e.Id)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("id");
+            entity.Property(e => e.HashedPassword)
+                .HasMaxLength(256)
+                .HasColumnName("hashedPassword");
+            entity.Property(e => e.KeyId).HasColumnName("key_Id");
+            entity.Property(e => e.PersonId).HasColumnName("person_Id");
+
+            entity.HasOne(d => d.Key).WithMany(p => p.Users)
+                .HasForeignKey(d => d.KeyId)
+                .HasConstraintName("fk_users_keys");
+
+            entity.HasOne(d => d.Person).WithMany(p => p.Users)
+                .HasForeignKey(d => d.PersonId)
+                .HasConstraintName("fk_users_people");
         });
 
         OnModelCreatingPartial(modelBuilder);

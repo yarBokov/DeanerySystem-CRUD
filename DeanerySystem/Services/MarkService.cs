@@ -1,4 +1,5 @@
-﻿using DeanerySystem.Data;
+﻿using DeanerySystem.Abstractions;
+using DeanerySystem.Data;
 using DeanerySystem.Data.Entities;
 using DeanerySystem.Models;
 using Microsoft.EntityFrameworkCore;
@@ -42,6 +43,15 @@ namespace DeanerySystem.Services
                                        .Include(m => m.Subject).ThenInclude(s => s.Marks)
                                        .Include(m => m.Student).ThenInclude(s => s.Group).ToListAsync();
             return result.OrderBy(mark => mark.Student.GroupId).ThenBy(mark => mark.Student.SecondName).ThenBy(mark => mark.Subject.Name);
+        }
+
+        public IEnumerable<int> GetFreeTermsToEdit(Mark mark)
+        {
+            List<int> terms = _context.Marks.Where(m => m.StudentId == mark.StudentId &&
+                m.SubjectId == mark.SubjectId).Select(m => m.Term.Value).ToList();
+            terms.Remove(mark.Term.Value);
+            List<int> untrackedTerms = Enumerable.Range(1, mark.Student.Group.getMaxTerm()).Except(terms).ToList();
+            return untrackedTerms.Order();
         }
 
         public async Task<MethodResult> DeleteMarkAsync(int markId)
