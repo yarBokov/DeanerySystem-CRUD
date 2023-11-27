@@ -1,4 +1,5 @@
 ﻿using DeanerySystem.Abstractions;
+using DeanerySystem.Authentication;
 using DeanerySystem.Data;
 using DeanerySystem.Data.Entities;
 using DeanerySystem.Models;
@@ -33,7 +34,11 @@ namespace DeanerySystem.Services
             }
         }
 
-        public async Task<Key?> GetKeyAsync(string accessKey) =>
-          await _context.Keys.FirstOrDefaultAsync(k => k.AccessKey == accessKey);
+        public async Task<Key?> GetKeyAsync(string accessKey, PasswordHasher hasher)
+        {
+            var keysList = await _context.Keys.ToListAsync();
+            var key = keysList.FirstOrDefault(k => hasher.Verify(k.AccessKey, accessKey));
+            return key;
+        }
     }
 }

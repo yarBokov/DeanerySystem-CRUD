@@ -99,7 +99,7 @@
                     {
                         if (_model.AccessKey != null)
                         {
-                            accessKey = await AccountService.GetKeyAsync(_model.AccessKey);
+                            accessKey = await AccountService.GetKeyAsync(_model.AccessKey, (PasswordHasher)PasswordHasher);
                             if (accessKey == null)
                             {
                                 _errorMsg = "Неверный ключ доступа! Попробуйте снова";

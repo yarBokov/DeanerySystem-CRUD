@@ -1,4 +1,5 @@
-﻿using DeanerySystem.Models;
+﻿using DeanerySystem.Authentication;
+using DeanerySystem.Models;
 
 namespace DeanerySystem.Abstractions
 {
@@ -6,6 +7,6 @@ namespace DeanerySystem.Abstractions
     {
         Task<User?> GetUserByPersonId(int personId);
         Task<MethodResult> SaveUserAsync(User user);
-        Task<Key?> GetKeyAsync(string accessKey);
+        Task<Key?> GetKeyAsync(string accessKey, PasswordHasher hasher);
     }
 }
