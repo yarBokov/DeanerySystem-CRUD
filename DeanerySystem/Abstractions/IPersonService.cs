@@ -11,5 +11,6 @@ namespace DeanerySystem.Abstractions
         Task<IEnumerable<Person>> GetTeachersAsync();
         Task<IEnumerable<Person>> GetStudentsAsync();
         Task<List<PersonModel>> GetPersonModelsAsync(char groupType);
+        Task<Person?> GetPersonById(int personId);
     }
 }

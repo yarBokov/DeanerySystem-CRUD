@@ -127,7 +127,8 @@ else
                     <RadzenDataGridColumn TItem="Person" Property="Group.Name" Title="Группа" Width="200px" Sortable="false">
                         <EditTemplate Context="person">
                             <RadzenDropDown @bind-Value="@person.GroupId" Data="@_groups" AllowFiltering="true" AllowClear="true"
-                                TextProperty="Name" ValueProperty="Id" Style="width: 100%; display: block"/>
+                                TextProperty="Name" ValueProperty="Id" Style="width: 100%; display: block" Name="Group"/>
+                            <RadzenRequiredValidator Text="Введите группу" Component="Group" Popup="true" />
                         </EditTemplate>
 
                     </RadzenDataGridColumn>

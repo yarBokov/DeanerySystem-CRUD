@@ -59,7 +59,7 @@ public partial class DeaneryContext : DbContext
                 .UseIdentityAlwaysColumn()
                 .HasColumnName("id");
             entity.Property(e => e.AccessKey)
-                .HasMaxLength(15)
+                .HasMaxLength(256)
                 .HasColumnName("accessKey");
         });
 

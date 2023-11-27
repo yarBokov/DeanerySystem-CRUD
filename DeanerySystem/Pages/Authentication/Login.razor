@@ -42,7 +42,7 @@
                     <p class="text-danger">@_errorMsg</p>
                     if (mustRegister)
                     {
-                        <NavLink href="/authentication/registration" class="link-light nav-link">Зарегистрироваться</NavLink>
+                        <NavLink href="/authentication/registration" class="link-dark nav-link">Зарегистрироваться</NavLink>
                     }
                 }
             </div>
@@ -73,21 +73,23 @@
                 mustRegister = true;
                 _isProcessing = false;
             }
-            mustRegister = false;
-            if (!PasswordHasher.Verify(userAccount.HashedPassword, _model.Password))
-            {
-                _errorMsg = "Пароль не подходит! Попробуйте снова";
-                _isProcessing = false;
-            }
             if (_isProcessing)
             {
-                var deaneryAuthStateProvider = (DeaneryAuthenticationStateProvider)AuthStateProvider;
-                await deaneryAuthStateProvider.UpdateAuthenticationState(new UserSession
-                    {
-                        UserName = userAccount.Person.getFullName(),
-                        Role = userAccount.Person.getUserRole()
-                    });
-                NavigationManager.NavigateTo("/", true);
+                if (!PasswordHasher.Verify(userAccount.HashedPassword, _model.Password))
+                {
+                    _errorMsg = "Пароль не подходит! Попробуйте снова";
+                    _isProcessing = false;
+                }
+                if (_isProcessing)
+                {
+                    var deaneryAuthStateProvider = (DeaneryAuthenticationStateProvider)AuthStateProvider;
+                    await deaneryAuthStateProvider.UpdateAuthenticationState(new UserSession
+                        {
+                            UserName = userAccount.Person.getFullName(),
+                            Role = userAccount.Person.getUserRole()
+                        });
+                    NavigationManager.NavigateTo("/", true);
+                }
             }
         }
         catch (Exception e)

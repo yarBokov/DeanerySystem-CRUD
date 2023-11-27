@@ -36,6 +36,11 @@ namespace DeanerySystem.Services
             }
         }
 
+        public async Task<Person?> GetPersonById(int personId)
+        {
+            return await _context.People.FirstOrDefaultAsync(p => p.Id == personId);
+        } 
+
         public async Task<IEnumerable<Person>> GetTeachersAsync()
         {
             var result = await _context.People.Include(p => p.Group)

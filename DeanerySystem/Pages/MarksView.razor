@@ -143,7 +143,8 @@ else
                             @if (mark.TeacherId == 9999 || isInserting)
                             {
                                 <RadzenDropDown @bind-Value="mark.TeacherId" Data="@teachers" AllowFiltering="true" AllowClear="true"
-                                    TextProperty="FullName" ValueProperty="Id" Style="width: 100%; display: block" />
+                                    TextProperty="FullName" ValueProperty="Id" Style="width: 100%; display: block" Name="TeacherName"/>
+                                <RadzenRequiredValidator Text="Введите ФИО преподавателя" Popup="true" Component="TeacherName" />
                             }
                             else
                             {
@@ -154,11 +155,23 @@ else
 
                     <RadzenDataGridColumn TItem="Mark" Property="Value" Title="Оценка" Width="80px" FilterValue="@markValue">
                         <EditTemplate Context="mark">
-                            <RadzenDropDown @bind-Value="mark.Value" Data="@Enumerable.Range(2, 5)" AllowFiltering="true" AllowClear="true" Style="width: 100%" />
+                            <RadzenDropDown @bind-Value="mark.Value" Data="@Enumerable.Range(2, 5)" AllowFiltering="true" AllowClear="true" Style="width: 100%" Name="Mark" />
+                            <RadzenRequiredValidator Text="Введите оценку" Popup="true" Component="Mark" />
                         </EditTemplate>
 
                         <FilterTemplate>
                             <RadzenNumeric @bind-Value=markValue ShowUpDown=false />
+                        </FilterTemplate>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="Mark" Property="Term" Title="За семестр" Width="100px" FilterValue="@termValue">
+                        <EditTemplate Context="mark">
+                            <RadzenNumeric @bind-Value="mark.Term" Style="width: 100%" ShowUpDown=false Min="1" Max="@mark.Student.Group.getMaxTerm()" Name="Term"/>
+                            <RadzenRequiredValidator Text="Введите семестр" Popup="true" Component="Term" />
+                        </EditTemplate>
+
+                        <FilterTemplate>
+                            <RadzenNumeric @bind-Value="termValue" ShowUpDown=false Style="width: 100%" Min="1" Max="17"/>
                         </FilterTemplate>
                     </RadzenDataGridColumn>
 
@@ -172,15 +185,6 @@ else
                         </EditTemplate>
                     </RadzenDataGridColumn>
 
-                    <RadzenDataGridColumn TItem="Mark" Property="Term" Title="За семестр" Width="100px" FilterValue="@termValue">
-                        <EditTemplate Context="mark">
-                            <RadzenNumeric @bind-Value="mark.Term" Style="width: 100%" ShowUpDown=false Min="1" Max="@mark.Student.Group.getMaxTerm()"/>
-                        </EditTemplate>
-
-                        <FilterTemplate>
-                            <RadzenNumeric @bind-Value="termValue" ShowUpDown=false Style="width: 100%" Min="1" Max="17"/>
-                        </FilterTemplate>
-                    </RadzenDataGridColumn>
                     <AuthorizeView Roles="Admin">
                         <RadzenDataGridColumn TItem="Mark" Context="mark" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
                             <Template Context="mark">

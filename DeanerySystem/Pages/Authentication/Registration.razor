@@ -5,6 +5,7 @@
 @inject NavigationManager NavigationManager
 @inject IAccountService AccountService
 @inject IPasswordHasher PasswordHasher
+@inject IPersonService PersonService
 
 @if (_isProcessing)
 {
@@ -77,54 +78,64 @@
         _isProcessing = true;
         try
         {
-            var userAccount = await AccountService.GetUserByPersonId(_model.PersonId.Value);
-            if (userAccount != null)
+            User? userAccount = new();
+            var personById = await PersonService.GetPersonById(_model.PersonId.Value);
+            if (personById == null)
             {
-                _errorMsg = "Пользователь с таким ID уже существует!";
+                _errorMsg = "Человека с таким ID в базе не существует!";
                 _isProcessing = false;
             }
-            else if(_isProcessing)
+            else
             {
-                if (_isAdmin)
+                userAccount = await AccountService.GetUserByPersonId(_model.PersonId.Value);
+                if (userAccount != null)
                 {
-                    if (_model.AccessKey != null)
+                    _errorMsg = "Пользователь с таким ID уже существует!";
+                    _isProcessing = false;
+                }
+                else if (_isProcessing)
+                {
+                    if (_isAdmin)
                     {
-                        accessKey = await AccountService.GetKeyAsync(_model.AccessKey);
-                        if (accessKey == null)
+                        if (_model.AccessKey != null)
                         {
-                            _errorMsg = "Неверный ключ доступа! Попробуйте снова";
+                            accessKey = await AccountService.GetKeyAsync(_model.AccessKey);
+                            if (accessKey == null)
+                            {
+                                _errorMsg = "Неверный ключ доступа! Попробуйте снова";
+                                _isProcessing = false;
+                            }
+                        }
+                        else
+                        {
+                            _errorMsg = "Введите ключ доступа админа!";
                             _isProcessing = false;
                         }
                     }
-                    else
+                    if (_isProcessing)
                     {
-                        _errorMsg = "Введите ключ доступа админа!";
-                        _isProcessing = false;
-                    }
-                }
-                if (_isProcessing)
-                {
-                    var result = await AccountService.SaveUserAsync(new User
-                        {
-                            PersonId = _model.PersonId,
-                            HashedPassword = PasswordHasher.Hash(_model.Password),
-                            KeyId = (accessKey == null ? null : accessKey.Id)
-                        });
-                    if (!result.Status)
-                    {
-                        throw new Exception("Ошибка при сохранении пользователя: " + result.Error);
-                    }
-                    else
-                    {
-                        await Task.Delay(1000);
-                        userAccount = await AccountService.GetUserByPersonId(_model.PersonId.Value);
-                        var deaneryAuthStateProvider = (DeaneryAuthenticationStateProvider)AuthStateProvider;
-                        await deaneryAuthStateProvider.UpdateAuthenticationState(new UserSession
+                        var result = await AccountService.SaveUserAsync(new User
                             {
-                                UserName = userAccount.Person.getFullName(),
-                                Role = userAccount.Person.getUserRole()
+                                PersonId = _model.PersonId,
+                                HashedPassword = PasswordHasher.Hash(_model.Password),
+                                KeyId = (accessKey == null ? null : accessKey.Id)
                             });
-                        NavigationManager.NavigateTo("/", true);
+                        if (!result.Status)
+                        {
+                            throw new Exception("Ошибка при сохранении пользователя: " + result.Error);
+                        }
+                        else
+                        {
+                            await Task.Delay(1000);
+                            userAccount = await AccountService.GetUserByPersonId(_model.PersonId.Value);
+                            var deaneryAuthStateProvider = (DeaneryAuthenticationStateProvider)AuthStateProvider;
+                            await deaneryAuthStateProvider.UpdateAuthenticationState(new UserSession
+                                {
+                                    UserName = userAccount.Person.getFullName(),
+                                    Role = userAccount.Person.getUserRole()
+                                });
+                            NavigationManager.NavigateTo("/", true);
+                        }
                     }
                 }
             }
